@@ -1,4 +1,16 @@
 /* Shared scientific workspace; no alterations to computed quantities. */
+/* Underline direction: square actions and border-light inputs across workspaces. */
+button,input,select,textarea,.btn,.mode-toggle,.unified-actions button{border-radius:0!important;box-shadow:none!important}
+input[type=number],input[type=text],input:not([type]),select,textarea{background:#fff!important;border:0!important;border-bottom:1px solid #aaa!important;padding:8px 2px!important;color:#222!important}
+input:disabled,select:disabled{color:#888!important;border-bottom-color:#ddd!important}
+.control-row .unit{background:transparent!important;border:0!important;border-radius:0!important;color:#666!important;flex-shrink:0}
+.control-row input{flex:1 1 0!important;min-width:70px!important}
+button.primary,.btn.primary,.solvebar .primary{background:#222!important;color:#fff!important;border:1px solid #222!important;border-radius:0!important}
+body>nav.unified-tabs,body>nav[aria-label="Main"]{gap:24px!important}
+body>nav.unified-tabs>button,body>nav[aria-label="Main"]>button{border-radius:0!important;padding:9px 0!important;border-bottom:2px solid transparent!important;background:transparent!important}
+body>nav.unified-tabs>button[aria-selected="true"],body>nav[aria-label="Main"]>button[aria-pressed="true"]{background:transparent!important;border-bottom-color:#222!important}
+.study-switch button,.mode-btn{background:transparent!important;color:#777!important;border:0!important;border-bottom:2px solid transparent!important}
+.study-switch button[aria-pressed="true"],.mode-btn.active{background:transparent!important;color:#222!important;border-bottom-color:#222!important}
 :root{--sj-palette:linear-gradient(90deg,#160d3d,#591269,#a82e5e,#e85b38,#fda42d,#f6fba4)}
 /* One navigation geometry for all three independently built workspaces. */
 body>nav.unified-tabs,body>nav[aria-label="Main"]{height:60px!important}
@@ -46,3 +58,6 @@ html[data-dimension="2d"] #thermal2d .t2d-layout{height:auto!important;overflow:
 #scene{height:560px!important}.metrics.sj-primary{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}.metric small{font-size:14px}.metric strong{font-size:28px}
 @media(max-width:720px){#scene{height:360px!important}.metrics.sj-primary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.calculator-grid,.t2d-layout,html[data-dimension="2d"] #thermal2d .t2d-layout{display:flex!important;flex-direction:column!important}.sj-metrics{grid-template-columns:repeat(2,1fr)}.geometry-visual-body{height:300px}.sj-feasibility{flex-wrap:wrap}#thermal2d>.t2d-layout>.t2d-inputs{max-height:none}}
+body>nav.unified-tabs,body>nav[aria-label="Main"]{gap:24px!important}
+body>nav.unified-tabs>button,body>nav[aria-label="Main"]>button{border-radius:0!important;padding:9px 0!important;border:0!important;border-bottom:2px solid transparent!important;background:transparent!important}
+body>nav.unified-tabs>button[aria-selected="true"],body>nav[aria-label="Main"]>button[aria-pressed="true"]{background:transparent!important;border-bottom-color:#222!important}
