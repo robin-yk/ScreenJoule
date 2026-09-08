@@ -32,8 +32,9 @@ s=s.replace('function updateAll() {\n      let result = currentResult();', '''le
       const serial=++updateSerial;let result;
       try{result=document.documentElement.dataset.dimension==='0d'?await workerCall('zero',[baseInputs()]):currentResult();}catch(e){const note=document.querySelector('.workspace-note');if(note)note.textContent='Calculation failed: '+e.message;return;}
       if(serial!==updateSerial)return;''')
-s=s.replace('    init();','    init();\n'+(root/'src/suite-sweep.js').read_text()+'\n'+(root/'src/suite-adapter.js').read_text().replace('window.innerHeight-map.getBoundingClientRect().top-152','Math.min(650,window.innerHeight-map.getBoundingClientRect().top-270)')+'\n'+(root/'src/workspace-polish.js').read_text(),1)
+s=s.replace('    init();',(root/'src/figures.js').read_text()+'\n'+(root/'src/figure-ui.js').read_text()+'\n'+(root/'src/suite-figures.js').read_text()+'\n    init();\n'+(root/'src/suite-sweep.js').read_text()+'\n'+(root/'src/suite-adapter.js').read_text().replace('window.innerHeight-map.getBoundingClientRect().top-152','Math.min(650,window.innerHeight-map.getBoundingClientRect().top-270)')+'\n'+(root/'src/workspace-polish.js').read_text(),1)
 # Color rendering only; numerical solvers and temperature normalization are unchanged.
+s=s.replace('const render=()=>{if(!state)return;','const render=()=>{if(!state)return;return renderSuiteSweep(state,$("unifiedOutput").value,fields);',1)
 s=s.replace('[[16,42,67],[40,120,165],[88,184,177],[235,190,70],[211,55,55]]','[[22,13,61],[89,18,105],[168,46,94],[232,91,56],[253,164,45],[246,251,164]]')
 # A single temperature is represented by a single color, without a false spatial gradient.
 s=s.replace('const light = toRgb(mix(base, [255,255,255], 0.34));','const light = toRgb(base);').replace('const lighter = toRgb(mix(base, [255,255,255], 0.55));','const lighter = toRgb(base);').replace('const dark = toRgb(mix(base, [0,0,0], 0.32));','const dark = toRgb(base);')
