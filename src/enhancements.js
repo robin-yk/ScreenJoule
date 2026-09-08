@@ -11,7 +11,7 @@ for(const k of ['wallK','wallCp','wallDensity'])$(k).addEventListener('input',()
 let cases=[];try{const saved=JSON.parse(localStorage.getItem('joule3d.cases.v3')||'[]');if(Array.isArray(saved))cases=saved.filter(c=>c&&c.parameters&&c.stats).slice(-12);}catch{}
 function loadParameters(p){
  p=structuredClone(p);
- p={meshType:'cartesian',nr:4,nt:48,initialMode:'uniform',...p};
+ p={meshType:'cartesian',nr:4,nt:48,initialMode:'uniform',porosity:0,resistivityBasis:'skeleton',...p};
  if(!p||typeof p!=='object')throw Error('Missing parameters object.');
  for(const k of keys){if(p[k]===undefined)continue;if(strings.has(k)){if(!Array.from($(k).options).some(o=>o.value===p[k]))throw Error('Unsupported '+k);}else if(!Number.isFinite(p[k]))throw Error('Invalid '+k);}
  if(p.parts&&!Array.isArray(p.parts))throw Error('Invalid CAD parts.');

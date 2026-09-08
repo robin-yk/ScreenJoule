@@ -6,7 +6,7 @@ window.screenJouleShared=async function(c){
  const initial=!sharedSuiteInitialized;sharedSuiteInitialized=true;
  if(initial)window.sharedConvection=true;
  clearTimeout(saveTimer);
- const values={shape:'cylinder',voidFraction:0,nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,rhoUnit:'ohm-cm',rhoValue:c.rho*100,thermalK:c.k,density:c.density,cp:c.cp,jmax:5e6,imax:c.imax,vmax:c.vmax,pmax:c.pmax};
+ const values={shape:'cylinder',voidFraction:c.porosity??0,porousMode:'effective',effectiveK:c.k,nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,rhoUnit:'ohm-cm',rhoValue:c.rho*100,thermalK:c.k,density:c.density,cp:c.cp,jmax:5e6,imax:c.imax,vmax:c.vmax,pmax:c.pmax};
  if(initial)Object.assign(values,{ambientC:20,gasC:20,hConv:100,emissivity:0,t2dContactRho:0,t2dPorosityContrast:0});
  for(const [id,v]of Object.entries(values))$(id).value=v;
  if(initial)$('convection').checked=true;
@@ -18,9 +18,11 @@ window.screenJouleShared=async function(c){
  await updateAll();if(dimension==='2d')await solveSelected2D(false);
 };
 window.screenJouleCapture=()=>{
- if($('shape').value!=='cylinder'||num('voidFraction')!==0)return {unsupported:'Only solid cylinders can currently be shared with 3D. Restore Cylinder with zero void fraction to switch.'};
+ if($('shape').value!=='cylinder')return {unsupported:'Only cylindrical envelopes can currently be shared with 3D.'};
+ if(!(num('voidFraction')>=0&&num('voidFraction')<1))return {unsupported:'Void fraction must be in [0, 1).'};
+ if(num('voidFraction')>0&&$('porousMode').value!=='effective')return {unsupported:'Enable the porous-body approximation to share the same mass and conductivity basis with 3D.'};
  const diameter=Math.cbrt(4*num('nominalVolume')*1000/(Math.PI*num('aspectRatio'))),mode=document.querySelector('.mode-btn.active')?.dataset.mode;
- return {length:diameter*num('aspectRatio'),diameter,rho:($('rhoUnit').value==='ohm-cm'?num('rhoValue'):num('rhoValue')*1e-4)*.01,k:num('thermalK'),density:num('density'),cp:num('cp'),imax:num('imax'),vmax:num('vmax'),pmax:num('pmax'),mode:mode==='cc'?'I':mode==='cv'?'V':'P',command:mode==='cc'?num('iset'):mode==='cv'?num('vset'):(sharedPower??num('pmax'))};
+ return {porosity:num('voidFraction'),length:diameter*num('aspectRatio'),diameter,rho:($('rhoUnit').value==='ohm-cm'?num('rhoValue'):num('rhoValue')*1e-4)*.01,k:$('porousMode').value==='effective'?num('effectiveK'):num('thermalK'),density:num('density'),cp:num('cp'),imax:num('imax'),vmax:num('vmax'),pmax:num('pmax'),mode:mode==='cc'?'I':mode==='cv'?'V':'P',command:mode==='cc'?num('iset'):mode==='cv'?num('vset'):(sharedPower??num('pmax'))};
 };
 const powerLabel=document.createElement('label');powerLabel.textContent='Power setpoint (W)';
 const powerInput=document.createElement('input');powerInput.type='number';powerInput.min='0';powerInput.value='10';powerInput.id='sharedPower';powerLabel.append(powerInput);$('pmax').closest('.field').after(powerLabel);

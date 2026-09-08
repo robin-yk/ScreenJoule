@@ -1,6 +1,6 @@
 # Shared cylinder comparison
 
-The homepage starts with the common solid cylinder below. On tab changes, nominal cylinder dimensions, scalar resistivity, thermal conductivity, density, heat capacity and supply settings transfer from the active workspace to the next. No comparison panel is shown. Reloading restarts the common case. Electrode and boundary settings remain local. Temperature-dependent tables are not transferred. Noncylindrical shapes and porous bodies cannot currently be transferred to 3D; navigation gives an explicit warning instead of silently replacing the geometry.
+The homepage starts with the common solid cylinder below. On tab changes, nominal cylinder dimensions, porosity, scalar resistivity, effective thermal conductivity, skeleton density, heat capacity and supply settings transfer from the active workspace to the next. No comparison panel is shown. Reloading restarts the common case. Electrode and boundary settings remain local. Temperature-dependent tables are not transferred. Noncylindrical shapes cannot currently be transferred; navigation gives an explicit warning. Porous cylinders use the explicit porous-body approximation described in [porous-3d.md](porous-3d.md).
 
 The comparison uses constant SiC proxy properties (electrical resistivity 0.000555556 Ω m, thermal conductivity 120 W/m K, density 3210 kg/m³, heat capacity 750 J/kg K). Every surface has h = 100 W/m² K to 20 °C. Radiation, enclosure, gas flow and electrical contact resistance are disabled. This is a numerical comparison, not an experimental reactor validation.
 

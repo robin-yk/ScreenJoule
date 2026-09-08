@@ -2,6 +2,7 @@
 const $=id=>document.getElementById(id);
 const keys=['meshType','nr','nt','initialMode','shape','length','width','height','bore','n','rho','k','alpha','density','cp','contact','offsetA','offsetB','mode','command','vmax','imax','pmax','ambient','sink','h','emissivity','hc','maxTemp','study','duration','dt','period','duty','initial','channelWidth','channelHeight','flowRate','gasInlet','mu','gasDensity','gasCp','gasK','wallThickness','wallK','wallCp','wallDensity','wallEmissivity','insulationThickness','insulationK','contactR','thermalR','slew','jlimit','limitAction','nx','ny','nz','targetLow','targetHigh','flowUnit','outletPressure','electrodeLength','electrodeRho','electrodeK','electrodeCp','electrodeDensity','wallGeometry','wallWidth','wallHeight'];
 const strings=new Set(['meshType','initialMode','shape','mode','study','limitAction','flowUnit','wallGeometry']);
+keys.push('porosity','resistivityBasis');strings.add('resistivityBasis');
 
 let cadParts=[],stlTriangles=null,wallParts=[],wallTriangles=null,viewModel;
 let savedInitialState=null,lastCompletedState=null,solverWorker=null,previewKey=null,previewMesh=null;

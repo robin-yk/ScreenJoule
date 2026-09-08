@@ -134,6 +134,18 @@ function materialTable(rows,fallback,name){
 }
 function solveModel(p,progress=()=>{}){
   p={insulationThickness:0,insulationK:.04,...p};
+  // Homogeneous porous heater: envelope mesh, skeleton mass and body-scale k.
+  // Transform a copy so repeated solves and exported inputs retain their basis.
+  const porosity=p.porosity??0;
+  if(!Number.isFinite(porosity)||porosity<0||porosity>=1)throw Error('Porosity must be in [0, 1).');
+  const resistivityBasis=p.resistivityBasis??'skeleton';
+  if(!['skeleton','effective'].includes(resistivityBasis))throw Error('Unknown resistivity basis.');
+  const solidFraction=1-porosity;
+  p.density*=solidFraction;
+  if(resistivityBasis==='skeleton'){
+    p.rho/=solidFraction;
+    p.rhoCurve=(p.rhoCurve||[]).map(([t,r])=>[t,r/solidFraction]);
+  }
   for(const k of ['contactR','thermalR','slew','jlimit'])if(p[k]!==undefined&&!(Number.isFinite(p[k])&&p[k]>=0))throw Error(k+' must be finite and nonnegative.');
   if(p.wall&&(!(p.wallEmissivity>=0&&p.wallEmissivity<=1)||!(p.insulationThickness>=0)||!(p.insulationK>0)))throw Error('Invalid wall emissivity or insulation.');
   if(p.wall&&!p.flow)throw Error('Enable gas flow to solve the reactor wall.');

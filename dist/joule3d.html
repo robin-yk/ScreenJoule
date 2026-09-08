@@ -83,6 +83,8 @@ body>nav.unified-tabs>button[aria-selected="true"],body>nav[aria-label="Main"]>b
 <div class="row"><label>X (mm)<input id="partx" type="number" value="0"></label><label>Y (mm)<input id="party" type="number" value="0"></label></div><label>Z (mm)<input id="partz" type="number" value="0"></label>
 <button id="addpart">Add part</button> <button id="clearparts">Clear parts</button><div id="partlist" class="note"></div></div><button id="stlexport">Export voxel STL</button></details>
 <details open><summary>Material</summary><label>Preset<select id="material"><option value="SiC">SiC | example</option><option value="TiO2">TiO₂ | example</option><option value="Fe">Iron | example</option><option value="C">Graphite | example</option><option value="custom">Custom</option></select></label><p id="materialInfo" class="note"></p><a href="#material-catalog" onclick="document.getElementById('methodtab').click()">Material properties &amp; provenance</a>
+<label>Porosity (void fraction)<input id="porosity" type="number" value="0" min="0" max="0.99" step="0.01"></label>
+<details><summary>Porous material basis</summary><label>Resistivity input<select id="resistivityBasis"><option value="skeleton">Skeleton material</option><option value="effective">Measured effective body</option></select></label><p class="note">Enter skeleton density and mass-specific Cp. Enter body-scale effective k, including for temperature tables. Porosity reduces heater mass; skeleton resistivity is divided by the solid fraction. Effective resistivity and k are used unchanged. The envelope is homogeneous; individual pores, channel flow and internal pore radiation are not resolved. Finite electrodes remain dense.</p></details>
 <label>Resistivity at 25 °C (Ω m)<input id="rho" type="number" value="0.0001" min="1e-10" step="any"><input id="rhoslider" aria-label="Logarithmic resistivity" type="range" min="-8" max="0" step=".05" value="-4"></label>
 <div class="row"><label>k (W/m K)<input id="k" type="number" value="120" min=".01" step="1"></label><label>α (1/K)<input id="alpha" type="number" value="0" step=".0001"></label></div>
 <div class="row"><label>Density (kg/m³)<input id="density" type="number" value="3210" min="1"></label><label>Cp (J/kg K)<input id="cp" type="number" value="750" min="1"></label></div><div class="note">Illustrative scalar inputs, not validated material data. ρe(T) = ρe,25 [1 + α(T − 25 °C)].</div></details>
@@ -550,6 +552,18 @@ function materialTable(rows,fallback,name){
 }
 function solveModel(p,progress=()=>{}){
   p={insulationThickness:0,insulationK:.04,...p};
+  // Homogeneous porous heater: envelope mesh, skeleton mass and body-scale k.
+  // Transform a copy so repeated solves and exported inputs retain their basis.
+  const porosity=p.porosity??0;
+  if(!Number.isFinite(porosity)||porosity<0||porosity>=1)throw Error('Porosity must be in [0, 1).');
+  const resistivityBasis=p.resistivityBasis??'skeleton';
+  if(!['skeleton','effective'].includes(resistivityBasis))throw Error('Unknown resistivity basis.');
+  const solidFraction=1-porosity;
+  p.density*=solidFraction;
+  if(resistivityBasis==='skeleton'){
+    p.rho/=solidFraction;
+    p.rhoCurve=(p.rhoCurve||[]).map(([t,r])=>[t,r/solidFraction]);
+  }
   for(const k of ['contactR','thermalR','slew','jlimit'])if(p[k]!==undefined&&!(Number.isFinite(p[k])&&p[k]>=0))throw Error(k+' must be finite and nonnegative.');
   if(p.wall&&(!(p.wallEmissivity>=0&&p.wallEmissivity<=1)||!(p.insulationThickness>=0)||!(p.insulationK>0)))throw Error('Invalid wall emissivity or insulation.');
   if(p.wall&&!p.flow)throw Error('Enable gas flow to solve the reactor wall.');
@@ -1484,6 +1498,7 @@ function initFigureExports(){for(const id of ['history','supplyPlot','sweepCanva
 const $=id=>document.getElementById(id);
 const keys=['meshType','nr','nt','initialMode','shape','length','width','height','bore','n','rho','k','alpha','density','cp','contact','offsetA','offsetB','mode','command','vmax','imax','pmax','ambient','sink','h','emissivity','hc','maxTemp','study','duration','dt','period','duty','initial','channelWidth','channelHeight','flowRate','gasInlet','mu','gasDensity','gasCp','gasK','wallThickness','wallK','wallCp','wallDensity','wallEmissivity','insulationThickness','insulationK','contactR','thermalR','slew','jlimit','limitAction','nx','ny','nz','targetLow','targetHigh','flowUnit','outletPressure','electrodeLength','electrodeRho','electrodeK','electrodeCp','electrodeDensity','wallGeometry','wallWidth','wallHeight'];
 const strings=new Set(['meshType','initialMode','shape','mode','study','limitAction','flowUnit','wallGeometry']);
+keys.push('porosity','resistivityBasis');strings.add('resistivityBasis');
 
 let cadParts=[],stlTriangles=null,wallParts=[],wallTriangles=null,viewModel;
 let savedInitialState=null,lastCompletedState=null,solverWorker=null,previewKey=null,previewMesh=null;
@@ -1591,7 +1606,7 @@ for(const k of ['wallK','wallCp','wallDensity'])$(k).addEventListener('input',()
 let cases=[];try{const saved=JSON.parse(localStorage.getItem('joule3d.cases.v3')||'[]');if(Array.isArray(saved))cases=saved.filter(c=>c&&c.parameters&&c.stats).slice(-12);}catch{}
 function loadParameters(p){
  p=structuredClone(p);
- p={meshType:'cartesian',nr:4,nt:48,initialMode:'uniform',...p};
+ p={meshType:'cartesian',nr:4,nt:48,initialMode:'uniform',porosity:0,resistivityBasis:'skeleton',...p};
  if(!p||typeof p!=='object')throw Error('Missing parameters object.');
  for(const k of keys){if(p[k]===undefined)continue;if(strings.has(k)){if(!Array.from($(k).options).some(o=>o.value===p[k]))throw Error('Unsupported '+k);}else if(!Number.isFinite(p[k]))throw Error('Invalid '+k);}
  if(p.parts&&!Array.isArray(p.parts))throw Error('Invalid CAD parts.');
@@ -1857,11 +1872,12 @@ let shared3DInitialized=false;
 window.screenJouleShared=async function(c){
   if(worker){worker.terminate();solverWorker=null;worker=null;setBusy(false);}
   const initial=shared3DInitialized?{}:{shape:'rod',meshType:'cartesian',bore:0,nx:32,ny:32,nz:48,alpha:0,rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,flow:false,wall:false,h:100,hc:100,emissivity:0,ambient:20,sink:20,study:'steady',parts:[],triangles:null,jlimit:0};
-  loadParameters({...params(),...initial,length:c.length,width:c.diameter,height:c.diameter,rho:c.rho,k:c.k,density:c.density,cp:c.cp,mode:c.mode,command:c.command,imax:c.imax,vmax:c.vmax,pmax:c.pmax});
+  loadParameters({...params(),...initial,porosity:c.porosity??0,resistivityBasis:'skeleton',length:c.length,width:c.diameter,height:c.diameter,rho:c.rho,k:c.k,density:c.density,cp:c.cp,mode:c.mode,command:c.command,imax:c.imax,vmax:c.vmax,pmax:c.pmax});
   shared3DInitialized=true;
 };
 window.screenJouleCapture=()=>{
  const p=params();if(p.shape!=='rod')return {unsupported:'This geometry is 3D-only. Select Solid cylinder to share with 0D / 2D.'};
- return {length:p.length,diameter:p.width,rho:p.rho,k:p.k,density:p.density,cp:p.cp,mode:p.mode,command:p.command,imax:p.imax,vmax:p.vmax,pmax:p.pmax};
+ if(!(p.porosity>=0&&p.porosity<1))return {unsupported:'Porosity must be in [0, 1).'};
+ return {porosity:p.porosity,length:p.length,diameter:p.width,rho:p.rho*(p.resistivityBasis==='effective'?1-p.porosity:1),k:p.k,density:p.density,cp:p.cp,mode:p.mode,command:p.command,imax:p.imax,vmax:p.vmax,pmax:p.pmax};
 };
 </script></body></html>
