@@ -44,7 +44,7 @@
       const body=document.createElement('tbody');table.append(body);
       for(const id of ['t2dIV','t2dResistance']){const row=$(id)?.closest('tr');if(row)body.append(row);}
       rail.querySelector('.t2d-kpis').after(table);
-      const study=document.querySelector('.study-switch');nav.insertBefore(study,nav.querySelector('.unified-actions'));
+      // Analysis mode belongs to Model, below the shared section navigation.
       const map=$('thermalMap');
       function fitField(){
         const desktop=window.innerWidth>=1100;
