@@ -1231,7 +1231,7 @@
         <div class="t2d-results">
           <div class="t2d-map-grid">
             <article class="card t2d-canvas-shell">
-              <div class="card-header"><h3 id="t2dMapTitle">Temperature Field</h3><div class="t2d-field-pick"><label for="t2dFieldSelect">Show</label><select id="t2dFieldSelect"><option value="temperature" selected>Temperature</option><option value="current">Current density |J|</option><option value="heating">Volumetric heating q‴</option></select></div><span id="t2dMeshLabel" class="context-note">Fixed 60 × 60 mesh · solve to update</span></div>
+              <div class="card-header"><h3 id="t2dMapTitle">Element temperature</h3><div class="t2d-field-pick"><label for="t2dFieldSelect">Show</label><select id="t2dFieldSelect"><option value="elementTemperature" selected>Temperature | Element</option><option value="temperature">Temperature | Full domain</option><option value="current">Current density |J|</option><option value="heating">Volumetric heating q‴</option></select></div><span id="t2dMeshLabel" class="context-note">Fixed 60 × 60 mesh · solve to update</span></div>
               <canvas id="thermalMap" width="600" height="600" aria-label="Axisymmetric element, full-height reactor wall, helium, and surrounding-air temperature field"></canvas>
               <div class="t2d-colorbar"><div class="t2d-gradient"></div><div class="t2d-scale"><span id="t2dScaleMin">—</span><span id="t2dScaleLabel">Temperature (°C)</span><span id="t2dScaleMax">—</span></div></div>
               <div id="t2dHover" class="t2d-hover">He flows from top to bottom at 50 sccm. Move over a cell to inspect x, z, material, and temperature.</div>
@@ -1897,6 +1897,12 @@
     // cells are the only ones colored and the rest is drawn in a neutral tone
     // that still lets the geometry read.
     const MAP_FIELDS={
+      elementTemperature:{
+        title:"Element temperature", scale:"Element temperature (°C)", elementOnly:true,
+        valueAt:(r,i,j)=>celsius(r.T[j][i]),
+        text:(v)=>`${format(v,1)} °C`,
+        describe:(lo,hi,r)=>`${r.material.name} element temperature, ${format(lo,1)} to ${format(hi,1)} degrees Celsius; surrounding regions excluded from the color scale.`
+      },
       temperature:{
         title:"Temperature Field", scale:"Temperature (°C)", elementOnly:false,
         valueAt:(r,i,j)=>celsius(r.T[j][i]),
@@ -1916,8 +1922,8 @@
         describe:(lo,hi,r)=>`${r.material.name} volumetric Joule heating inside the element, from ${format(lo,4)} to ${format(hi,4)} megawatts per cubic metre.`
       }
     };
-    let current2DField="temperature";
-    function activeMapField() { return MAP_FIELDS[current2DField]||MAP_FIELDS.temperature; }
+    let current2DField="elementTemperature";
+    function activeMapField() { return MAP_FIELDS[current2DField]||MAP_FIELDS.elementTemperature; }
 
     function draw2D(result) {
       const canvas=$("thermalMap"),nr=result.mesh.nr,nz=result.mesh.nz,physicalWidth=2*result.mesh.domainRadius,physicalHeight=result.mesh.domainHeight;
@@ -2568,148 +2574,40 @@
       const svg = $("geometryVisual");
       svg.replaceChildren();
       if (r.g.shape === "box") { renderBoxVisual(r, svg); return; }
-      const W = 680, H = 320;
-      // True-to-scale: body width/height keep the real L/D ratio (a 1:1 rod draws as an
-      // actual square profile, not a fixed 5:3 box). Only the true extremes of the allowed
-      // range are floored/capped so a very short-and-fat or long-and-thin rod stays legible.
-      const maxBodyW = 310, maxBodyH = 180, minBodyW = 76, minBodyH = 48;
-      const ratio = clamp(r.g.aspectRatio, 0.18, 8);
-      let bodyW = ratio, bodyH = 1;
-      const fit = Math.min(maxBodyW / bodyW, maxBodyH / bodyH);
-      bodyW *= fit;
-      bodyH *= fit;
-      if (bodyW < minBodyW) { const s = minBodyW / bodyW; bodyW *= s; bodyH *= s; }
-      if (bodyH < minBodyH) { const s = minBodyH / bodyH; bodyW *= s; bodyH *= s; }
-      bodyW = clamp(bodyW, minBodyW, maxBodyW);
-      bodyH = clamp(bodyH, minBodyH, maxBodyH);
-      const ellipseW = clamp(bodyH * 0.25, 14, 34);
-      const x0 = (W - bodyW) / 2;
-      const x1 = x0 + bodyW;
-      const cy = 160;
-      const y0 = cy - bodyH / 2;
-      const y1 = cy + bodyH / 2;
-      const edge = "#102a43";
-      const poreFill = "#eef4f8", poreEdge = "#b9cddb";
-
-      // Color the element by its computed steady-state temperature (same thermal scale as
-      // the 2D field), with a colorbar beside it. The scale ceiling floats a bit above the
-      // hottest reference value on hand so Tss doesn't pin to the very top of the bar.
-      const ambientK = r.input.ambientK;
-      const refK = finite(r.tss) ? r.tss : (finite(r.input.targetK) ? r.input.targetK : ambientK + 2000);
-      const colorMax = Math.max(ambientK + 500, refK * 1.15);
-      const heatU = clamp((refK - ambientK) / Math.max(1e-6, colorMax - ambientK), 0, 1);
-      const mix = (c, target, amt) => c.map((v, i) => Math.round(v + (target[i] - v) * amt));
-      const toRgb = (c) => `rgb(${c[0]},${c[1]},${c[2]})`;
-      const base = thermalColorRGB(heatU);
-      const light = toRgb(mix(base, [255,255,255], 0.34));
-      const lighter = toRgb(mix(base, [255,255,255], 0.55));
-      const mid = toRgb(base);
-      const dark = toRgb(mix(base, [0,0,0], 0.32));
-
-      updateGeometryColorbar(heatU, ambientK, colorMax, refK, finite(r.tss));
-
-      // Depth cues (gradients + ground shadow) so the schematic reads as a solid, lit cylinder
-      // rather than a flat rectangle-plus-ellipses silhouette.
-      const defs = svgEl("defs");
-      const bodyGrad = svgEl("linearGradient", { id:"cylBodyGrad", x1:"0", y1:"0", x2:"0", y2:"1" });
-      bodyGrad.append(svgEl("stop", { offset:"0%", "stop-color":light }));
-      bodyGrad.append(svgEl("stop", { offset:"52%", "stop-color":mid }));
-      bodyGrad.append(svgEl("stop", { offset:"100%", "stop-color":dark }));
-      const capFrontGrad = svgEl("radialGradient", { id:"capFrontGrad", cx:"36%", cy:"30%", r:"78%" });
-      capFrontGrad.append(svgEl("stop", { offset:"0%", "stop-color":lighter }));
-      capFrontGrad.append(svgEl("stop", { offset:"62%", "stop-color":light }));
-      capFrontGrad.append(svgEl("stop", { offset:"100%", "stop-color":mid }));
-      const capBackGrad = svgEl("radialGradient", { id:"capBackGrad", cx:"42%", cy:"36%", r:"78%" });
-      capBackGrad.append(svgEl("stop", { offset:"0%", "stop-color":mid }));
-      capBackGrad.append(svgEl("stop", { offset:"100%", "stop-color":dark }));
-      const groundBlur = svgEl("filter", { id:"cylGroundBlur", x:"-60%", y:"-60%", width:"220%", height:"260%" });
-      groundBlur.append(svgEl("feGaussianBlur", { stdDeviation:5 }));
-      const clip = svgEl("clipPath", { id:"cylinderPoreClip" });
-      clip.append(svgEl("rect", { x:x0, y:y0, width:bodyW, height:bodyH }));
-      clip.append(svgEl("ellipse", { cx:x0, cy, rx:ellipseW, ry:bodyH/2 }));
-      clip.append(svgEl("ellipse", { cx:x1, cy, rx:ellipseW, ry:bodyH/2 }));
-      defs.append(bodyGrad, capFrontGrad, capBackGrad, groundBlur, clip);
-      svg.append(defs);
-
-      svg.append(svgEl("ellipse", {
-        cx:(x0+x1)/2, cy:y1+9, rx:bodyW*0.46, ry:8,
-        fill:"#0b1f33", opacity:0.18, filter:"url(#cylGroundBlur)"
-      }));
-
-      svg.append(svgEl("rect", { x:x0, y:y0, width:bodyW, height:bodyH, fill:"url(#cylBodyGrad)", stroke:edge, "stroke-width":1.75 }));
-      svg.append(svgEl("ellipse", { cx:x0, cy, rx:ellipseW, ry:bodyH/2, fill:"url(#capFrontGrad)", stroke:edge, "stroke-width":1.75 }));
-      svg.append(svgEl("ellipse", { cx:x1, cy, rx:ellipseW, ry:bodyH/2, fill:"url(#capBackGrad)", stroke:edge, "stroke-width":1.75 }));
-
-      /*
-        The pore field is an equal-area mosaic. The fraction of open cells is
-        set directly to φ, so the projected void area tracks the entered
-        porosity. A deterministic hash disperses cells across the full
-        cylinder instead of placing them along a line.
-      */
-      const cols = 18, rows = 8;
-      const cellW = (bodyW + 2*ellipseW) / cols;
-      const cellH = bodyH / rows;
-      const cells = [];
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const hash = ((col*83 + row*157 + col*row*43 + col*col*17 + row*row*29) % 997) / 997;
-          cells.push({ row, col, hash });
-        }
+      const ambientK=r.input.ambientK;
+      const refK=finite(r.tss)?r.tss:r.input.targetK;
+      const colorMax=Math.max(ambientK+500,refK*1.15);
+      const heatU=clamp((refK-ambientK)/(colorMax-ambientK),0,1);
+      updateGeometryColorbar(heatU,ambientK,colorMax,refK,finite(r.tss));
+      const base=thermalColorRGB(heatU);
+      const shade=(f)=>`rgb(${base.map(v=>Math.round(v*f)).join(",")})`;
+      // One lumped temperature. Lighting distinguishes surfaces, not temperature.
+      // A removed quadrant reveals the solid interior; it does not represent a bore.
+      const ratio=clamp(r.g.aspectRatio,0.3,7);
+      const radius=Math.min(70,145/Math.sqrt(ratio));
+      const length=Math.min(285,Math.max(95,2*radius*ratio));
+      const origin=[330-length*.43,174-length*.11];
+      const pt=(z,a)=>[origin[0]+z*.86+radius*.52*Math.cos(a),origin[1]+z*.22-radius*Math.sin(a)];
+      const center=z=>[origin[0]+z*.86,origin[1]+z*.22];
+      const polygon=(points,fill,stroke="none")=>svg.append(svgEl("polygon",{points:points.map(p=>p.join(',')).join(' '),fill,stroke,"stroke-width":1.1,"stroke-linejoin":"round"}));
+      const label=(x,y,t,size=15,anchor="start")=>svg.append(svgEl("text",{x,y,fill:"#243b45","font-size":size,"font-family":"Arial","text-anchor":anchor},t));
+      const back=[center(0)];
+      for(let i=0;i<=135;i++)back.push(pt(0,Math.PI/2+i*1.5*Math.PI/135));
+      polygon(back,shade(.78),"#705632");
+      // The visible lower curved surface and front three-quarter section.
+      for(let i=0;i<90;i++){
+        const a=Math.PI+i*Math.PI/90,b=Math.PI+(i+1)*Math.PI/90;
+        polygon([pt(0,a),pt(length,a),pt(length,b),pt(0,b)],shade(.68+.25*Math.sin((i/90)*Math.PI)));
       }
-      cells.sort((a,b) => a.hash-b.hash);
-      const voidCells = new Set(cells.slice(0, Math.round(r.g.porosity*cells.length)).map((d) => `${d.row}-${d.col}`));
-      const poreLayer = svgEl("g", { "clip-path":"url(#cylinderPoreClip)" });
-      const poreRadius = Math.max(1, Math.min(cellW, cellH) * 0.34);
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          if (!voidCells.has(`${row}-${col}`)) continue;
-          poreLayer.append(svgEl("circle", {
-            cx:x0-ellipseW+col*cellW+cellW/2,
-            cy:y0+row*cellH+cellH/2,
-            r:poreRadius,
-            fill:poreFill,
-            stroke:poreEdge,
-            "stroke-width":0.8
-          }));
-        }
-      }
-      svg.append(poreLayer);
-      svg.append(svgEl("ellipse", { cx:x0, cy, rx:ellipseW, ry:bodyH/2, fill:"none", stroke:edge, "stroke-width":1.75 }));
-      svg.append(svgEl("ellipse", { cx:x1, cy, rx:ellipseW, ry:bodyH/2, fill:"none", stroke:edge, "stroke-width":1.75 }));
-
-      // Dimension lines follow standard drafting convention: witness lines offset from the
-      // part, inward-pointing arrowheads touching them, value centered on the dimension line.
-      const dimColor = "#982929";
-      const arrow = (tipX, tipY, dx, dy, size=7, half=2.6) => {
-        const bx = tipX - dx*size, by = tipY - dy*size;
-        const px = -dy*half, py = dx*half;
-        return svgEl("polygon", { points:`${tipX},${tipY} ${bx+px},${by+py} ${bx-px},${by-py}`, fill:dimColor });
-      };
-
-      const dimY = y1 + 32;
-      svg.append(svgEl("line", { x1:x0, x2:x0, y1:y1+4, y2:dimY+5, stroke:"#c9b3b3", "stroke-width":1 }));
-      svg.append(svgEl("line", { x1:x1, x2:x1, y1:y1+4, y2:dimY+5, stroke:"#c9b3b3", "stroke-width":1 }));
-      svg.append(svgEl("line", { x1:x0, x2:x1, y1:dimY, y2:dimY, stroke:dimColor, "stroke-width":1.5 }));
-      svg.append(arrow(x0, dimY, 1, 0));
-      svg.append(arrow(x1, dimY, -1, 0));
-      svg.append(svgEl("text", { x:(x0+x1)/2, y:dimY+19, "text-anchor":"middle", fill:dimColor, "font-size":17, "font-weight":500, "font-family":"Roboto, Arial" }, `L = ${format(r.g.L*1000, 3)} mm`));
-
-      const dimX = x1 + ellipseW + 38;
-      svg.append(svgEl("line", { x1:x1+ellipseW+4, x2:dimX+5, y1:y0, y2:y0, stroke:"#c9b3b3", "stroke-width":1 }));
-      svg.append(svgEl("line", { x1:x1+ellipseW+4, x2:dimX+5, y1:y1, y2:y1, stroke:"#c9b3b3", "stroke-width":1 }));
-      svg.append(svgEl("line", { x1:dimX, x2:dimX, y1:y0, y2:y1, stroke:dimColor, "stroke-width":1.5 }));
-      svg.append(arrow(dimX, y0, 0, 1));
-      svg.append(arrow(dimX, y1, 0, -1));
-      svg.append(svgEl("text", { x:dimX+13, y:cy+5, fill:dimColor, "font-size":17, "font-weight":500, "font-family":"Roboto, Arial" }, `D = ${format(r.g.D*1000, 3)} mm`));
-
-      const phiText = `φ = ${format(r.g.porosity, 3)}  (${format(r.g.porosity*100, 1)}% void)`;
-      svg.append(svgEl("text", { x:20, y:29, fill:"#102a43", "font-size":21, "font-weight":500, "font-family":"Roboto, Arial" }, phiText));
-      svg.append(svgEl("text", { x:20, y:55, fill:"#64717d", "font-size":16, "font-family":"Roboto, Arial" }, `f_solid = ${format(r.g.solidFraction, 3)} · Vol = ${format(r.g.envelopeVolume*1e6, 3)} cm³`));
-      const legendLabel = "White area = schematic void fraction";
-      const legendWidth = legendLabel.length * 8.3;
-      svg.append(svgEl("circle", { cx:W-24-legendWidth-11, cy:23, r:6, fill:poreFill, stroke:poreEdge, "stroke-width":1 }));
-      svg.append(svgEl("text", { x:W-20, y:29, "text-anchor":"end", fill:"#64717d", "font-size":16, "font-family":"Roboto, Arial" }, legendLabel));
-      svg.setAttribute("aria-label", `Calculated cylinder: length ${format(r.g.L*1000,3)} millimeters, diameter ${format(r.g.D*1000,3)} millimeters, porosity ${format(r.g.porosity*100,1)} percent.`);
+      polygon([center(0),pt(0,Math.PI/2),pt(length,Math.PI/2),center(length)],shade(.98),"#705632");
+      polygon([center(0),center(length),pt(length,0),pt(0,0)],shade(.82),"#705632");
+      const front=[center(length)];
+      for(let i=0;i<=135;i++)front.push(pt(length,Math.PI/2+i*1.5*Math.PI/135));
+      polygon(front,shade(.93),"#705632");
+      label(22,26,`Envelope volume ${format(r.g.envelopeVolume*1e6,3)} cm³ | Porosity ${format(r.g.porosity*100,1)}%`,16);
+      label(22,49,'Cutaway schematic | Single-temperature element',13);
+      label(340,292,`L = ${format(r.g.L*1000,3)} mm | D = ${format(r.g.D*1000,3)} mm`,16,"middle");
+      svg.setAttribute("aria-label",`Solid cylinder cutaway schematic, one lumped temperature; length ${format(r.g.L*1000,3)} mm, diameter ${format(r.g.D*1000,3)} mm. The cutaway is not a physical bore.`);
     }
 
     function renderEquations(r) {
@@ -3421,4 +3319,3 @@
   </script>
 </body>
 </html>
-
