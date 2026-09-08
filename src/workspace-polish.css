@@ -1,0 +1,29 @@
+/* Shared scientific workspace; no alterations to computed quantities. */
+:root{--sj-palette:linear-gradient(90deg,#160d3d,#591269,#a82e5e,#e85b38,#fda42d,#f6fba4)}
+html,body,button,input,select,textarea{font-family:Arial,Helvetica,sans-serif!important}
+main{max-width:1800px!important;margin:auto!important}
+.calculator-grid,.t2d-layout{grid-template-columns:300px minmax(0,1fr)!important;gap:32px!important}
+.field .unit{padding:8px!important}.field input{width:100%!important}.field label{line-height:1.4}
+.geometry-visual-body{background:white!important;border:0!important;min-height:0!important;height:440px;padding:0!important}
+.geometry-visual-body svg{max-height:420px!important}
+.geometry-visual-head{padding:12px 0!important}.geometry-visual-head strong{font-size:16px!important;color:#333!important}
+.geometry-colorbar{background:white!important}
+.geometry-colorbar-track{background:linear-gradient(0deg,#160d3d,#591269,#a82e5e,#e85b38,#fda42d,#f6fba4)!important;border:0!important;border-radius:0!important}
+#geometryVisual{background:white!important;border:0!important;border-radius:0!important}
+.t2d-gradient{background:var(--sj-palette)!important;border:0!important;height:8px!important;border-radius:0!important}
+.sj-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;padding:24px 0;border-top:1px solid #e8e8e8;border-bottom:1px solid #e8e8e8;margin:0 0 18px}
+.sj-metrics small,.sj-metrics .kpi-label{display:block;font-size:14px!important;color:#666!important;margin-bottom:10px;font-weight:400}
+.sj-metrics strong,.sj-metrics .kpi-value{display:block;font-size:28px!important;font-weight:400!important;line-height:1.3;font-variant-numeric:tabular-nums}
+.sj-metrics .t2d-kpi{padding:0!important;min-height:0!important}.sj-metrics .kpi-sub{display:none!important}
+.sj-feasibility{display:flex;align-items:baseline;gap:18px;padding:10px 0!important;min-height:0!important}.sj-feasibility .kpi-label{margin:0}.sj-feasibility .kpi-value{font-size:20px!important}.sj-feasibility .kpi-sub{font-size:14px!important}
+html[data-dimension="2d"] #thermal2d .t2d-layout{height:auto!important;overflow:visible!important;grid-template-columns:300px minmax(0,1fr)!important}
+#thermal2d .t2d-results{display:block!important;height:auto!important;overflow:visible!important}
+#thermal2d .field-results-rail{height:auto!important;overflow:visible!important;padding:0!important;border:0!important}
+#thermal2d .field-results-rail>.t2d-kpis{grid-template-columns:repeat(2,1fr)!important}
+#thermal2d>.t2d-layout>.t2d-inputs{max-height:calc(100vh - 110px);overflow-y:auto!important;padding-right:22px!important}
+.t2d-canvas-shell>.card-header h3{font-size:16px!important}.t2d-canvas-shell .context-note{font-size:12px!important}
+.t2d-hover{display:none!important}.t2d-material-key{justify-content:center;font-size:12px!important;margin:12px 0 22px!important}
+.t2d-colorbar{max-width:360px!important}.workspace-detail>summary{font-size:14px}
+#scene{height:560px!important}.metrics.sj-primary{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}.metric small{font-size:14px}.metric strong{font-size:28px}
+@media(max-width:720px){#scene{height:360px!important}.metrics.sj-primary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.calculator-grid,.t2d-layout,html[data-dimension="2d"] #thermal2d .t2d-layout{display:flex!important;flex-direction:column!important}.sj-metrics{grid-template-columns:repeat(2,1fr)}.geometry-visual-body{height:300px}.sj-feasibility{flex-wrap:wrap}#thermal2d>.t2d-layout>.t2d-inputs{max-height:none}}

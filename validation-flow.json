@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Square duct pressure drop converges toward analytical series",
+    "pass": true,
+    "relativeErrors": [
+      0.09324593601773967,
+      0.025783104385516342
+    ],
+    "errorReduction": 3.616551933525917
+  },
+  {
+    "name": "Coupled solid/gas power balance and outlet heating",
+    "pass": true,
+    "outlet_C": 48.62434936892953,
+    "pressureDrop_Pa": 0.0001225290611051347,
+    "heatResidual": 1.2586521691559936e-8,
+    "massResidual": 0
+  },
+  {
+    "name": "Coupled transient accounts for solid and gas storage",
+    "pass": true,
+    "input_J": 2.0000000000000004,
+    "stored_J": 1.971155086251354,
+    "loss_J": 0.028839984827752907,
+    "residual": 0.0000024644604467161098
+  },
+  {
+    "name": "CSG subtraction removes a bore from a connected solid",
+    "pass": true,
+    "plainCells": 648,
+    "boredCells": 576
+  },
+  {
+    "name": "Closed ASCII STL imports and ray voxelization classify cube",
+    "pass": true,
+    "triangles": 12,
+    "cells": 648
+  }
+]

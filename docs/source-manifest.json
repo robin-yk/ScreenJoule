@@ -1,0 +1,470 @@
+{
+  "date": "2026-09-07",
+  "siteCommit": "d25de092b71f2ef78148962701bde47b9af184ed",
+  "suiteCommit": "eb5171b5183519bf2d54c9b0b622f9d06faf765d",
+  "note": "Hashes refer to copied source files before packaging-only edits. No private manuscript, conversation, hosting configuration or credentials included.",
+  "files": [
+    {
+      "source": "screenjoule-site",
+      "path": "src/app.js",
+      "destination": "src/app.js",
+      "sha256": "24958e302c4955119da07b8407599637d11bf1d4e3c35cc0a8b5c6490e48c598"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/benchmark-ui.js",
+      "destination": "src/benchmark-ui.js",
+      "sha256": "f8637c63c6ba9901e818f83af7cf756f15605aa4cb438e9e56e35aa7f586e560"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/engine.js",
+      "destination": "src/engine.js",
+      "sha256": "b088b4ecd78cd2c7c71227d0d7539fe429f201e2427d66828a0a0d3bb66670cb"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/enhancements.js",
+      "destination": "src/enhancements.js",
+      "sha256": "aec8e5370b9cd0235eb9a81a3c7615f7f3a90bf36f9ff2e7af1a57946baa8d89"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/figure-ui.js",
+      "destination": "src/figure-ui.js",
+      "sha256": "7f20ecdc9c48e5cbce0daaabc6f38861eca92a625709ef9145c16e0be0eaf668"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/figures.js",
+      "destination": "src/figures.js",
+      "sha256": "3def57918ee054397970966c3ddf37beb623edd11e83d69706b9bfebef05891e"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/flow.js",
+      "destination": "src/flow.js",
+      "sha256": "f925f39aa0143beae5aa7e480af8889c3e01b68366404ff83abc46bac19ff682"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/home.html",
+      "destination": "src/home.html",
+      "sha256": "9f7f843d5cf387e9e657398ae1dea9ef4ffdc6f196bea498886ccf6c848b52a4"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/material-ui.js",
+      "destination": "src/material-ui.js",
+      "sha256": "077a31a6f79fa2edd1781748dc82a55f164287893deb3e256cf3c7ee3b3cc22c"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/materials.js",
+      "destination": "src/materials.js",
+      "sha256": "81dd0f4a1392d25c344c1b77d5d5ed4725b2c2e80a4279901c9200ab59d3b14e"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/method.html",
+      "destination": "src/method.html",
+      "sha256": "9aabd841bea131a611c49ea957583b1b0023558c235e252cbc9e7ca96c060f2f"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/page.html",
+      "destination": "src/page.html",
+      "sha256": "b731d764eeef6b497dcfd560cb0431a82181e6ef92a7548a87827831623745b8"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/screening-core.js",
+      "destination": "src/screening-core.js",
+      "sha256": "0f0b4243f71553d6d9f1425a7b54be1f061ea8779468f05520ae03a879e627cd"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/screening.js",
+      "destination": "src/screening.js",
+      "sha256": "d092915b93a13fa3b3fe8e631055790737b22bcf11a95ef6ce648ec92e4b8653"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-adapter.js",
+      "destination": "src/suite-adapter.js",
+      "sha256": "13e090cd1f4fb660e55546ddaac2abbd032958c8c8050dcb1f73c51510a08009"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-bridge.js",
+      "destination": "src/suite-bridge.js",
+      "sha256": "36f5a59c2d6bb0f524f378ffd510249cbda7f160d45d069268fd45272f2465d5"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-sweep.js",
+      "destination": "src/suite-sweep.js",
+      "sha256": "a17f2f86f44db24f86de6670d42166d2fe49e53302af9aae2706477fd7898ad8"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-theme.css",
+      "destination": "src/suite-theme.css",
+      "sha256": "dbb50dae835b620b82d010a2cf812b92d872e88203076f7a9ad11c8c4116c2e1"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-upstream/PROVENANCE.json",
+      "destination": "src/suite-upstream/PROVENANCE.json",
+      "sha256": "46e584d9cd1030d1f2d85b8f25e0f13df40f9fcbed1fd9add1170a0b856fcd16"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-upstream/crosscheck.js",
+      "destination": "src/suite-upstream/crosscheck.js",
+      "sha256": "913207f84ee5871aae1e4d4605fc0b24bdcb251ee32c0a27f43ec69d5e674512"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-upstream/data/crosscheck-2d.json",
+      "destination": "src/suite-upstream/data/crosscheck-2d.json",
+      "sha256": "5c9d88af8c321d7753bfdb1a28346e1f9819fc7f5b86b21e2aca61e98423c52e"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-upstream/index.html",
+      "destination": "src/suite-upstream/index.html",
+      "sha256": "8b7fc114b5d51251baea9d569dd4d88ec59c58a17ee2b96748647f6112d15d30"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-upstream/solver.js",
+      "destination": "src/suite-upstream/solver.js",
+      "sha256": "67e5830a4f6b71a28a161e8c2114190078592f73b97c5caff741abb3f07a3a7e"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/suite-worker.js",
+      "destination": "src/suite-worker.js",
+      "sha256": "7cffb865406e991066a1ed4f1689ad987dfceaa2433d4b04896ba6dbf0ba68f7"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/wall3d.js",
+      "destination": "src/wall3d.js",
+      "sha256": "e9315779b29f09188fd6b6cfae9bdeef61c87e3f83bf3b4ed48275ef8e5cf291"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/workspace-polish.css",
+      "destination": "src/workspace-polish.css",
+      "sha256": "eee7c60619559d0f73638c589af9bca40e7977102672c7eb59b15c57a0e3642a"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "src/workspace-polish.js",
+      "destination": "src/workspace-polish.js",
+      "sha256": "800c240f6c1f1de86edc9bd3bec62f80a99ec3a398b7ebb88fe97cedea4f22f6"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "benchmark-literature.js",
+      "destination": "benchmark-literature.js",
+      "sha256": "350fae72286783a949b3d194b6adbbc421b07f0928ff2691131a2d76caf4cde0"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "build-suite.py",
+      "destination": "build-suite.py",
+      "sha256": "65bd73b19f125c895936d4315f47473adac97231c3df268ecf08fd32d5643b9c"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "build.py",
+      "destination": "build.py",
+      "sha256": "9feee3e4c9e2a51014ebc6ffc325bb4a15ab6e0de34334c99563c068877ff6d0"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-benchmark-ui.js",
+      "destination": "test-benchmark-ui.js",
+      "sha256": "953a41d12d02e99194d0a6f8148d33638683ff4974048c1cbed550583288d50d"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-electrodes.js",
+      "destination": "test-electrodes.js",
+      "sha256": "7e8a212c9fabb9586ce135ba61f9f0010b36aac0e7734bf7a2de40ebb946d079"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-figures.js",
+      "destination": "test-figures.js",
+      "sha256": "cab62faff8f06c0066393f14744a18c88c8882c0c8cacdf6e7be60d642b1fe83"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-flow.js",
+      "destination": "test-flow.js",
+      "sha256": "c4be26dfc77a22160cb48531df6de07529bc956ffdba195766b7c0afd9934512"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-literature.js",
+      "destination": "test-literature.js",
+      "sha256": "0557f1f645ba16402716d3dee2c4207b6fc640e2350759e6a8b38ad8d4e2de01"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-materials.js",
+      "destination": "test-materials.js",
+      "sha256": "1f99ceecbbba7d403f358141746bb3e9e416079f6d8f6233e5aaf14faf79a719"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-presets.js",
+      "destination": "test-presets.js",
+      "sha256": "934f17fb68d9cbb69b8af315ca9aa71319ee05d7f89699c38391a2360fe18b93"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-screening.js",
+      "destination": "test-screening.js",
+      "sha256": "525f40a90ce73a39a1b4ddf17dd981ea67404c9783e71afad9d94f79c9c21a18"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-six-upgrades.js",
+      "destination": "test-six-upgrades.js",
+      "sha256": "511c2da37b3fd38446c33030fc38230e43932f2f6e259974054b7aa8e8e3b15f"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-thin-gas.js",
+      "destination": "test-thin-gas.js",
+      "sha256": "c80eac5d34f7806cc9c83775fcb476b774fc6758aa5c3e882b340677a2d5abec"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-thin-plate.js",
+      "destination": "test-thin-plate.js",
+      "sha256": "1b0222ce04a9b5cdf36c0a0ea31c6528e0716b27ef3f2b014edd2b50d463c2ac"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-tube-fix.js",
+      "destination": "test-tube-fix.js",
+      "sha256": "1fc9ffa0aef63c69918bbc66478e769fef363d36da6764b70abcab92b25dcd3c"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-unified.mjs",
+      "destination": "test-unified.mjs",
+      "sha256": "019394c98c8acb21bc4936f1725bcca31a20d870f0794604d013e0ee785a30d7"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-upgrades.js",
+      "destination": "test-upgrades.js",
+      "sha256": "f879925e03f5ca651e2dc0bb19ddff3123bff8fdf819f7b8b6865e00795f7ea5"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test-wall3d.js",
+      "destination": "test-wall3d.js",
+      "sha256": "fda3cc4c6f5756cb9e80a692a03bb4061cfea052de3d73d775e7c415d229d36b"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "test.js",
+      "destination": "test.js",
+      "sha256": "0bdfc74e137b91adad33ad50228c5109bd3fdfcaaf7e5d842a726327209d497e"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-electrodes.json",
+      "destination": "validation-electrodes.json",
+      "sha256": "c4e6cb03787aad972c2fbd6cccc302d9b0a56846e6821ca18185298350d731e1"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-figures.json",
+      "destination": "validation-figures.json",
+      "sha256": "bc917a71944bebe635ff21600bf40658fff60e344fbddd678eb4a0db216149a9"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-flow.json",
+      "destination": "validation-flow.json",
+      "sha256": "da111cfd8a3d71a639470919b42318cb50ce20e772167eecd2dc9557954c2df0"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-literature.json",
+      "destination": "validation-literature.json",
+      "sha256": "d28c39dbd2b136b4cc1e5a5a39eb90886d2305f28882024e08b0d0926042304c"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-materials.json",
+      "destination": "validation-materials.json",
+      "sha256": "a159ebf41fda6970b6ce545b61ebfbe78aea8e131c143c846474e5d12b309a66"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-screening.json",
+      "destination": "validation-screening.json",
+      "sha256": "e98a19baf49bf40356375cc70fd9113537e280aeefb227f163c65e5e54259b85"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-six-upgrades.json",
+      "destination": "validation-six-upgrades.json",
+      "sha256": "e88716377e4f775d23e213564364ffc90c940704cff46089e9ce6d56fea00f0b"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-tube-fix.json",
+      "destination": "validation-tube-fix.json",
+      "sha256": "15e8dd4ef220ca39588a95236985266aa01a91feba9d76b4c695218161d9ab69"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-unified.json",
+      "destination": "validation-unified.json",
+      "sha256": "c3fd2681cffb0889d4fd04dcfb565347a9fe30485d9a330a6dd24da30abbf9ad"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-upgrades.json",
+      "destination": "validation-upgrades.json",
+      "sha256": "c55993f70bc7c72f0564fb903a1fd8448b4906af5fd0ee7f789727802847dcfe"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation-wall3d.json",
+      "destination": "validation-wall3d.json",
+      "sha256": "7d298c5b64f29fbf687e626a4e77e8641cc197d85364d4dc574410e63a029307"
+    },
+    {
+      "source": "screenjoule-site",
+      "path": "validation.json",
+      "destination": "validation.json",
+      "sha256": "9e168c2ab367e84a9306280938fa59494ac216412840039c1f09bfb8e79a9edb"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "LICENSE",
+      "destination": "LICENSE",
+      "sha256": "0cb6a937bb029d9b63b0a3fb88c2205d3bd2eb20284f494cb1743b8ea2dfcc50"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "tests/joule-solver.test.js",
+      "destination": "tests/joule-solver.test.mjs",
+      "sha256": "253118aa39a5f90dbd3d8f30c75d0b3d717f2352e23f86d483cf7b3be9a19283"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "tests/joule-electrical.test.js",
+      "destination": "tests/joule-electrical.test.mjs",
+      "sha256": "21c59e853ede69e22ca15497142bdd236df0eeb81f29e2a079558cc83593fbe9"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "tests/joule-transient.test.js",
+      "destination": "tests/joule-transient.test.mjs",
+      "sha256": "913e848f1107da8821be082b30cc94da1a749353a45c66f38d3627b0ebe99fb8"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "tests/joule-crosscheck.test.js",
+      "destination": "tests/joule-crosscheck.test.mjs",
+      "sha256": "a0dd84b2948534db4d986e932ada276c3364b8a60e23b8af213d9c1420dcee4a"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/data-v6-final.json",
+      "destination": "research/data/data-v6-final.json",
+      "sha256": "a0b5cbd6698c49414f55ff95d75aa94ca15ab939a61f0c87cb4095854361c936"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/supplement.json",
+      "destination": "research/data/supplement.json",
+      "sha256": "50165a0e02d13679e69424166244a98a2f563b5b0c584c17a30166eea11728fe"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/limits.json",
+      "destination": "research/data/limits.json",
+      "sha256": "5064d1a89ce4e1030a93f127ee5d045b1378e51608f03f4d45ac79c49b7b101e"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/grid-detail.json",
+      "destination": "research/data/grid-detail.json",
+      "sha256": "010e2c8d1f6200b483bb88ee148dffac19e04d010aeda054e168d128716a84ba"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/mms-240.json",
+      "destination": "research/data/mms-240.json",
+      "sha256": "19b2d4d13c86ecce973bff7b7fb36dc21fb3d525e9fc15d62f9c9878d49533fb"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/material-fields-final.json",
+      "destination": "research/data/material-fields-final.json",
+      "sha256": "81e17a355a229ef0a3b73262baf4af9f5542dc4830d23892df0d3e29de35e4d3"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/s2-detail.json",
+      "destination": "research/data/s2-detail.json",
+      "sha256": "1b78d6aeb3b80775441fab0044a094b1d51cbe0668589f808f14b4cae5172aa4"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/contact-ratio.json",
+      "destination": "research/data/contact-ratio.json",
+      "sha256": "acb57d6f5ed980d851cdc08fcd1ac2f9ac622535235548f9f8d31b162964f5c0"
+    },
+    {
+      "source": "Electrification-Suite",
+      "path": "docs/research/joule-v6-2026-09-07/target-maps.json",
+      "destination": "research/data/target-maps.json",
+      "sha256": "2b4f4a4f62c6a67afbef0fadaff4956c6e574ecfffdb1b2c804255a562ad8fe3"
+    },
+    {
+      "source": "manuscript-project",
+      "path": "drafts/3d-browser-check/screening.json",
+      "destination": "research/3d-browser-check/screening.json",
+      "sha256": "2ead66c7e7a56c293adde4a00ee0c3d946b28d94329e8e1067ec9572d98676d3"
+    },
+    {
+      "source": "manuscript-project",
+      "path": "drafts/3d-browser-check/fig5-fields.json",
+      "destination": "research/3d-browser-check/fig5-fields.json",
+      "sha256": "7bffafefdff5415cdd19e59b1d89f4f3e822b36696a98664d21308f2b16de178"
+    },
+    {
+      "source": "manuscript-project",
+      "path": "drafts/3d-browser-check/aligned-settings.json",
+      "destination": "research/3d-browser-check/aligned-settings.json",
+      "sha256": "b8f1d85fb4c1e55551299755f4e498141a55513494bff357ccc4c91543e26ec3"
+    },
+    {
+      "source": "manuscript-project",
+      "path": "drafts/plot-joule-v7.py",
+      "destination": "research/plot-figure5.py",
+      "sha256": "c06cf9481cf69214b47f99560fd037aadf5f9876fb41bf7ceedeeb5f19b8a90a"
+    },
+    {
+      "source": "manuscript-project",
+      "path": "figures/plates-5in/scripts/common.py",
+      "destination": "research/common.py",
+      "sha256": "7d87fd910f33f7900fac4634dd63830f82f7efa608c4de2d1b2cf30755591b25"
+    }
+  ]
+}

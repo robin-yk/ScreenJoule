@@ -1,0 +1,18 @@
+{
+  "repository": "robin-yk/Electrification-Suite",
+  "retrieved": "2026-09-07",
+  "files": {
+    "apps/joule/index.html": {
+      "upstream_blob_sha": "9a2f0d0559851eac0257719cade3a20102b8408a"
+    },
+    "apps/joule/solver.js": {
+      "upstream_blob_sha": "d57ba6726703e336f648ae84502f7a04c8045112"
+    },
+    "apps/joule/crosscheck.js": {
+      "upstream_blob_sha": "4eb622f75451e671c21609d1aeecccaef61407bf"
+    },
+    "LICENSE": {
+      "upstream_blob_sha": "de1723279509aaaba68179bf7bc7dec70f825ef1"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+// Reproducible Joule3D comparisons. Boundary assumptions are not experimental fits.
+const fs=require('fs');
+const solve=new Function(['flow','wall3d','engine'].map(n=>fs.readFileSync('src/'+n+'.js','utf8')).join('\n')+';return solveModel;')();
+const base={shape:'block',length:38,width:8,height:.21,n:10,rho:.0005,k:400,alpha:0,density:452,cp:990,contact:100,offsetA:0,offsetB:0,mode:'V',command:16,vmax:100,imax:100,pmax:5000,ambient:20,sink:20,h:0,emissivity:.7,hc:250,maxTemp:3000,study:'steady',initial:20,flow:false};
+const cases=[];
+for(const n of [26,38])cases.push({name:'Wismann | '+n,classification:'Simplified boundary sensitivity, not experimental validation',reference:{Tmax:800},params:{...base,shape:'tube',length:500,width:6,bore:5.3,n,nx:n,ny:n,nz:36,rho:1.45e-6,k:11,density:7100,cp:460,mode:'I',command:65}});
+const calibrationR=13.04/30.26,area=Math.PI*.032**2/4;
+for(const [V,I,T] of [[11,24.58,550],[12.25,28.07,600],[13.04,30.26,650],[13.60,32.47,700],[14.10,34.70,752]])cases.push({name:'Zheng | '+V+' V',classification:V===13.04?'Calibration point':'Held-out electrical comparison with constant effective resistivity',reference:{I,Tdown:T},params:{...base,shape:'rod',length:99,width:32,n:16,rho:calibrationR*area/.099,k:40,density:366,cp:680,command:V,emissivity:.9}});
+for(const V of [16,20,31])cases.push({name:'Kwak | '+V+' V',classification:'Prescribed resistance fit; thermal boundary sensitivity only. Fit transcribed from reference repository, SI not independently checked.',reference:{resistanceFit:'4.25 - 0.000724 T_C ohm'},params:{...base,command:V,n:14,rho:(4.25-.000724*25)*(.008*.00021)/.038,alpha:-.000724/(4.25-.000724*25),emissivity:.57,hc:200}});
+const results=[];
+for(const c of cases){const start=performance.now();try{const r=solve(c.params);results.push({...c,stats:r.stats,grid:[r.mesh.nx,r.mesh.ny,r.mesh.nz],cells:r.mesh.N,seconds:(performance.now()-start)/1000});}catch(e){results.push({...c,error:e.message,seconds:(performance.now()-start)/1000});}fs.writeFileSync('validation-literature.json',JSON.stringify({boundaryAssumptions:'No gas, reaction or enclosure; ambient and terminal sink 20 C; h=0; opaque surface radiation; prescribed contact h. Temperatures are exploratory, not matched experiment.',results},null,2));console.log(JSON.stringify(results.at(-1)));}

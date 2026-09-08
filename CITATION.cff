@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "Please cite the software version used in your work."
+title: "ScreenJoule"
+type: software
+authors:
+  - family-names: Kwak
+    given-names: Yeonsu
+repository-code: "https://github.com/robin-yk/ScreenJoule"
+license: MIT

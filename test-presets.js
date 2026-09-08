@@ -1,0 +1,9 @@
+const fs=require('fs'),assert=require('assert/strict'),{materialCatalog,materialPresetValues}=require('./src/materials');
+const solve=new Function(['flow','wall3d','engine'].map(n=>fs.readFileSync('src/'+n+'.js','utf8')).join('\n')+';return solveModel;')();
+assert.equal(materialCatalog.length,17);assert.equal(new Set(materialCatalog.map(m=>m.id)).size,17);
+const base={shape:'block',length:40,width:8,height:4,n:3,contact:100,offsetA:0,offsetB:0,mode:'P',command:.001,vmax:50,imax:30,pmax:100,ambient:25,sink:25,h:15,emissivity:0,hc:2000,maxTemp:2000,study:'steady',initial:25,flow:false};
+for(const m of materialCatalog){const p=materialPresetValues(m);if(m.rhoAlpha)for(const t of [20,25,100,300])assert(Math.abs(p.rho*(1+p.alpha*(t-25))/(m.rhoOhmCm*.01*(1+m.rhoAlpha*(t-20)))-1)<1e-12);const r=solve({...base,...p});assert(Number.isFinite(r.stats.R)&&r.stats.R>0,m.name);assert(Math.abs(r.stats.P-.001)<1e-7,m.name);assert(!('jlimit' in p));}
+assert.equal(materialPresetValues(materialCatalog[0]).rho,.0005);assert.equal(materialPresetValues(materialCatalog.find(m=>m.id==='SiC')).rho,.0001);
+const ui=fs.readFileSync('src/material-ui.js','utf8'),body=ui.slice(0,ui.indexOf('function initMaterialCatalog'));
+const els=new Proxy({}, {get:(o,k)=>o[k]||(o[k]={value:'',textContent:''})});const apply=new Function('materialCatalog','materialPresetValues','$','invalidate',body+';return selectMaterial;')(materialCatalog,materialPresetValues,id=>els[id],()=>{});els.jlimit.value='123';els.material.value='catalog-6';apply();assert(els.rhoTable.value&&els.kTable.value&&els.cpTable.value);els.material.value='catalog-0';apply();assert.equal(els.rhoTable.value,'');assert.equal(els.kTable.value,'');assert.equal(els.cpTable.value,'');assert.equal(els.jlimit.value,'123');assert.match(els.materialSource.value,/CFP/);
+console.log('17 presets solve | unit conversion | 20/25 °C equivalence | table replacement | J trip preserved');

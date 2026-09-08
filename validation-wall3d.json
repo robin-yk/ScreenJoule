@@ -1,0 +1,49 @@
+[
+  {
+    "name": "Cylindrical wall partitions heater, wall, gas and exterior",
+    "pass": true,
+    "wallCells": 1440,
+    "gasCells": 960,
+    "volume": 0.000004556249999999999,
+    "exact": 0.00000424115008234622
+  },
+  {
+    "name": "3D cylinder energy conservation and circumferential temperature variation",
+    "pass": true,
+    "energyResidual": 2.7763217946841223e-8,
+    "wallMax": 36.3887811824186,
+    "crossSectionSpan": 1.448574971160383,
+    "massResidual": 2.2669453035535417e-7
+  },
+  {
+    "name": "Volumetric wall transient includes wall storage",
+    "pass": true,
+    "input": 0.6000000000000001,
+    "stored": 0.595514234989986,
+    "loss": 0.004484150585174502,
+    "residual": 0.0000026907080659851106
+  },
+  {
+    "name": "CSG wall and built-in rectangular shell give identical occupancy",
+    "pass": true,
+    "cells": 1872
+  },
+  {
+    "name": "Closed STL tube reproduces CSG wall occupancy",
+    "pass": true,
+    "triangles": 32,
+    "cells": 1872
+  },
+  {
+    "name": "Radial wall conduction approaches the logarithmic cylinder solution",
+    "pass": true,
+    "rmsErrorsC": [
+      1.8345801872535021,
+      0.8444733681750012
+    ]
+  },
+  {
+    "name": "Wall/element overlap is rejected",
+    "pass": true
+  }
+]

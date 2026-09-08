@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Uniform bar resistance, linear potential and conservation",
+    "pass": true,
+    "R": 0.19999999999998364,
+    "expected": 0.2,
+    "heatResidual": 1.1419484722557041e-9
+  },
+  {
+    "name": "Asymmetric electrode changes the 3D power distribution",
+    "pass": true,
+    "R": 0.23003187258154525,
+    "peakToMeanPowerDensity": 7.271619364712719
+  },
+  {
+    "name": "Thermal spatial refinement against parabolic solution",
+    "pass": true,
+    "rmsCoarse_K": 0.08680465140325608,
+    "rmsFine_K": 0.02170049380599029,
+    "ratio": 4.000123323428436
+  },
+  {
+    "name": "Adiabatic pulsed transient: integrated P equals stored heat",
+    "pass": true,
+    "input_J": 0.5999999999999999,
+    "stored_J": 0.5999953613734441,
+    "Tavg_C": 25.31152407132555,
+    "expected": 25.31152647975078
+  },
+  {
+    "name": "Temperature-dependent resistivity and power-supply limits",
+    "pass": true,
+    "R": 0.33714934214467696,
+    "limiter": "Power limit",
+    "heatResidual": 4.1621703399825885e-10
+  },
+  {
+    "name": "Tube and rod resistance use the actual voxel cross-section",
+    "pass": true,
+    "rod": 0.04923076923076836,
+    "tube": 0.07111111111110388
+  }
+]

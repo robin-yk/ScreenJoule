@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Nonlinear Cp crosses a table knot and matches analytic enthalpy",
+    "pass": true,
+    "temperature": 46.704406781776186,
+    "expected": 46.70441577299461,
+    "storedJ": 59.99996733902543,
+    "residual": 5.443495761407273e-7
+  },
+  {
+    "name": "Variable k spatial refinement against Kirchhoff-transform solution",
+    "pass": true,
+    "rmsErrorsK": [
+      0.1362596504149935,
+      0.03545509864846733,
+      0.008903920594244922
+    ],
+    "ratios": [
+      3.843160944663844,
+      3.9819648292218432
+    ]
+  },
+  {
+    "name": "Property data rejects invalid ordering, signs and extrapolation",
+    "pass": true,
+    "checks": 4
+  },
+  {
+    "name": "Variable heater and electrode properties coupled to gas",
+    "pass": true,
+    "energyResidual": 0.0000024655646558846556,
+    "heaterMax": 28.049068562552236,
+    "electrodeMax": 25.19313555028333
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Contact resistance and contact Joule power match series circuit",
+    "pass": true,
+    "R": 0.187499999999996,
+    "expected": 0.1875,
+    "contactW": 0.6666666666682759
+  },
+  {
+    "name": "Supply trip, J trip and voltage slew",
+    "pass": true,
+    "finalV": 0.4,
+    "expectedV": 0.4
+  },
+  {
+    "name": "Measured resistivity interpolation and range rejection",
+    "pass": true,
+    "R": 0.24999999999999784
+  },
+  {
+    "name": "Independent mesh dimensions",
+    "pass": true,
+    "cells": 108
+  },
+  {
+    "name": "Wall, gas, radiation and solid steady energy balance",
+    "pass": true,
+    "wallMaxC": 28.09932237848335,
+    "energyResidual": 9.125581712510211e-8
+  },
+  {
+    "name": "Wall transient includes wall heat capacity in energy inventory",
+    "pass": true,
+    "storedJ": 0.7921306434604027,
+    "inputJ": 0.8,
+    "lossJ": 0.007851273873253633,
+    "residual": 0.00002260333292952721
+  },
+  {
+    "name": "Mass and standard volumetric inputs reproduce actual flow",
+    "pass": true,
+    "dp": 0.00014460041168274455
+  }
+]

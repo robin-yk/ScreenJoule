@@ -1,0 +1,44 @@
+[
+  {
+    "case": "annular resistance",
+    "nr": 3,
+    "R": 0.11670021109794919,
+    "analytic": 0.11670021111668684,
+    "Tmax": 644.133856837325,
+    "energy": 1.626206264775969e-10
+  },
+  {
+    "case": "annular resistance",
+    "nr": 6,
+    "R": 0.11670021113072507,
+    "analytic": 0.11670021111668684,
+    "Tmax": 644.1115832375465,
+    "energy": 1.168737998706119e-10
+  },
+  {
+    "case": "radial logarithmic conduction",
+    "nr": 3,
+    "errorK": 6.051476475477102e-8
+  },
+  {
+    "case": "radial logarithmic conduction",
+    "nr": 6,
+    "errorK": 3.604174594329379e-7
+  },
+  {
+    "case": "restart cooling",
+    "initial": 643.4624284892255,
+    "final": 634.0415829645162,
+    "energy": 2.5120513173021414e-7
+  },
+  {
+    "case": "thin plate",
+    "R": 11.309523810744052,
+    "energy": 2.3528556319944635e-10
+  },
+  {
+    "case": "flow reuse",
+    "cachedMax": 518.1998885107863,
+    "freshMax": 518.1998885107863
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "name": "screenjoule",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electrothermal design screening under power-supply and electrode constraints",
+  "license": "MIT",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "build": "python3 build.py",
+    "test": "node scripts/test.mjs",
+    "serve": "python3 -m http.server 8000 --directory dist"
+  }
+}

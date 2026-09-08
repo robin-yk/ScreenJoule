@@ -1,0 +1,10 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const solveModel=new Function(fs.readFileSync('src/flow.js','utf8')+fs.readFileSync('src/engine.js','utf8')+';return solveModel;')();
+const p={shape:'block',length:40,width:8,height:4,n:4,rho:1e-4,k:120,alpha:0,density:3210,cp:750,contact:100,offsetA:0,offsetB:0,mode:'P',command:2,vmax:50,imax:30,pmax:100,ambient:25,sink:25,h:0,emissivity:0,hc:2000,maxTemp:2000,study:'steady',duration:.4,dt:.1,period:.4,duty:1,initial:25,flow:false,electrodeLength:10,electrodeRho:1.7e-8,electrodeK:400,electrodeCp:385,electrodeDensity:8960,contactR:1e-7,thermalR:1e-4};
+const report=[];
+const r=solveModel(p),A=.008*.004,expected=(.02*p.rho+.02*p.electrodeRho+2*p.contactR)/A;
+assert(Math.abs(r.stats.R/expected-1)<1e-6);assert(r.stats.energyError<1e-5);assert(r.stats.electrodeMax<r.stats.heaterMax);assert(Math.abs(r.stats.contactPower/(r.stats.I**2*2*p.contactR/A)-1)<1e-6);
+report.push({name:'Finite copper electrodes and interface resistance match series circuit',pass:true,R:r.stats.R,expected,heaterMax:r.stats.heaterMax,electrodeMax:r.stats.electrodeMax,energyResidual:r.stats.energyError});
+const t=solveModel({...p,study:'transient',hc:0});assert(t.stats.integratedError<1e-4);report.push({name:'Multi-material transient storage conserves energy',pass:true,input:t.stats.inputEnergy,stored:t.stats.stored,residual:t.stats.integratedError});
+const g=solveModel({...p,flow:true,channelWidth:20,channelHeight:10,gasDensity:1.2,gasCp:1005,gasK:.026,mu:1.8e-5,flowRate:5,gasInlet:25});assert(g.stats.energyError<1e-5);report.push({name:'Finite electrodes coupled to gas conserve steady heat',pass:true,energyResidual:g.stats.energyError,outletC:g.gas.stats.outlet});
+fs.writeFileSync('validation-electrodes.json',JSON.stringify(report,null,2)+'\n');console.log(report);

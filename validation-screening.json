@@ -1,0 +1,61 @@
+[
+  {
+    "name": "Axis sampling validates ranges and preserves log endpoints",
+    "pass": true,
+    "log": [
+      1,
+      10.000000000000002,
+      100
+    ]
+  },
+  {
+    "name": "Actual six-point sweep recovers power settings and analytical resistance",
+    "pass": true,
+    "rows": [
+      {
+        "P": 1,
+        "R": 0.06249999999999936
+      },
+      {
+        "P": 4,
+        "R": 0.06249999999999936
+      },
+      {
+        "P": 1,
+        "R": 0.12499999999999586
+      },
+      {
+        "P": 4,
+        "R": 0.12499999999999586
+      },
+      {
+        "P": 1,
+        "R": 0.187499999999993
+      },
+      {
+        "P": 4,
+        "R": 0.187499999999993
+      }
+    ]
+  },
+  {
+    "name": "Invalid tube geometry fails one point without replacing its value",
+    "pass": true,
+    "statuses": [
+      "ok",
+      "ok",
+      "error",
+      "ok"
+    ]
+  },
+  {
+    "name": "Contour interpolation follows a linear plane and masks missing quads",
+    "pass": true,
+    "segments": 6
+  },
+  {
+    "name": "Inactive or overridden parameters are blocked",
+    "pass": true,
+    "checks": 5
+  }
+]

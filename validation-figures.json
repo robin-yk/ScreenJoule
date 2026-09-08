@@ -1,0 +1,53 @@
+[
+  {
+    "figure": "history",
+    "panelIn": [
+      5,
+      5
+    ],
+    "axesIn": [
+      3.611114583333333,
+      3.611114583333333
+    ],
+    "ratio": 1.0,
+    "exportIn": [
+      5.0,
+      5.5555555555555545
+    ],
+    "labelsChecked": 11
+  },
+  {
+    "figure": "supply",
+    "panelIn": [
+      5,
+      5
+    ],
+    "axesIn": [
+      3.611114583333333,
+      3.611114583333333
+    ],
+    "ratio": 1.0,
+    "exportIn": [
+      5.0,
+      5.5555555555555545
+    ],
+    "labelsChecked": 11
+  },
+  {
+    "figure": "screening",
+    "panelIn": [
+      5,
+      5
+    ],
+    "axesIn": [
+      3.611114583333333,
+      3.611114583333333
+    ],
+    "ratio": 1.0,
+    "exportIn": [
+      7.0,
+      5.0
+    ],
+    "labelsChecked": 15
+  }
+]

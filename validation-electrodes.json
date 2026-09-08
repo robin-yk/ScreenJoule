@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Finite copper electrodes and interface resistance match series circuit",
+    "pass": true,
+    "R": 0.06876062500977807,
+    "expected": 0.068760625,
+    "heaterMax": 45.58601923145824,
+    "electrodeMax": 41.27600057673311,
+    "energyResidual": 5.229890887026301e-8
+  },
+  {
+    "name": "Multi-material transient storage conserves energy",
+    "pass": true,
+    "input": 0.7999999999999999,
+    "stored": 0.7999911244640961,
+    "residual": 0.000011094419879731367
+  },
+  {
+    "name": "Finite electrodes coupled to gas conserve steady heat",
+    "pass": true,
+    "energyResidual": 7.58884844964669e-8,
+    "outletC": 28.062040060956804
+  }
+]
