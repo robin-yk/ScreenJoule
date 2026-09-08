@@ -1,4 +1,11 @@
+let shared3DInitialized=false;
 window.screenJouleShared=async function(c){
-  if(worker)throw Error('3D is calculating. Try again after it finishes.');
-  loadParameters({...params(),shape:'rod',meshType:'cartesian',length:c.length,width:c.diameter,height:c.diameter,bore:0,nx:32,ny:32,nz:48,rho:0.000555556,k:120,density:3210,cp:750,alpha:0,rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,flow:false,wall:false,h:100,hc:100,emissivity:0,ambient:20,sink:20,mode:'P',command:c.power,imax:40,vmax:150,pmax:2000,study:'steady',parts:[],triangles:null,jlimit:0,materialSource:'Shared cylinder | Constant SiC proxy | h=100 W/m²K on every surface; no radiation, wall or gas flow'});
+  if(worker){worker.terminate();solverWorker=null;worker=null;setBusy(false);}
+  const initial=shared3DInitialized?{}:{shape:'rod',meshType:'cartesian',bore:0,nx:32,ny:32,nz:48,alpha:0,rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,flow:false,wall:false,h:100,hc:100,emissivity:0,ambient:20,sink:20,study:'steady',parts:[],triangles:null,jlimit:0};
+  loadParameters({...params(),...initial,length:c.length,width:c.diameter,height:c.diameter,rho:c.rho,k:c.k,density:c.density,cp:c.cp,mode:c.mode,command:c.command,imax:c.imax,vmax:c.vmax,pmax:c.pmax});
+  shared3DInitialized=true;
+};
+window.screenJouleCapture=()=>{
+ const p=params();if(p.shape!=='rod')return {unsupported:'This geometry is 3D-only. Select Solid cylinder to share with 0D / 2D.'};
+ return {length:p.length,diameter:p.width,rho:p.rho,k:p.k,density:p.density,cp:p.cp,mode:p.mode,command:p.command,imax:p.imax,vmax:p.vmax,pmax:p.pmax};
 };

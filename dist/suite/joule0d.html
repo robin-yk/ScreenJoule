@@ -3618,22 +3618,37 @@ drawDynChart=function(history,plan){
 })();
 
 
-// Explicit comparison mode; normal enclosure settings remain unchanged.
 const normalBaseInputs=baseInputs,normal2DConfig=get2DConfig;
+let sharedPower=null,sharedSuiteInitialized=false;
 get2DConfig=function(){const cfg=normal2DConfig();return window.sharedConvection?{...cfg,boundaryMode:'shared-convection',purge:false,contactRho:0,porosityContrast:0}:cfg;};
-baseInputs=function(){const x=normalBaseInputs();if(window.sharedConvection){x.material={...x.material,rhoTable:undefined,kTable:undefined,cpTable:undefined};x.emissivity=0;x.convection=true;x.gasK=x.ambientK;}return x;};
+baseInputs=function(){const x=normalBaseInputs();if(window.sharedConvection){x.material={...x.material,rhoTable:undefined,kTable:undefined,cpTable:undefined};x.emissivity=0;x.convection=true;x.gasK=x.ambientK;}if(sharedPower!==null)x.pmax=Math.min(x.pmax,sharedPower);return x;};
 window.screenJouleShared=async function(c){
-  window.sharedConvection=true;
-  clearTimeout(saveTimer);
-  const values={shape:'cylinder',voidFraction:0,nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,rhoUnit:'ohm-cm',rhoValue:0.0555556,thermalK:120,density:3210,cp:750,jmax:5e6,imax:40,vmax:150,pmax:c.power,ambientC:20,gasC:20,hConv:100,emissivity:0,t2dContactRho:0,t2dPorosityContrast:0};
-  for(const [id,v]of Object.entries(values))$(id).value=v;
-  $('convection').checked=true;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode==='auto'));
-  syncShape();showSection('model');
-  stateNote.textContent='Shared cylinder | Constant SiC properties | h = 100 W/m²K on all surfaces | No radiation, wall or gas flow | Reload to leave comparison mode';
-  await updateAll();if(dimension==='2d')await solveSelected2D(false);
+ const initial=!sharedSuiteInitialized;sharedSuiteInitialized=true;
+ if(initial)window.sharedConvection=true;
+ clearTimeout(saveTimer);
+ const values={shape:'cylinder',voidFraction:0,nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,rhoUnit:'ohm-cm',rhoValue:c.rho*100,thermalK:c.k,density:c.density,cp:c.cp,jmax:5e6,imax:c.imax,vmax:c.vmax,pmax:c.pmax};
+ if(initial)Object.assign(values,{ambientC:20,gasC:20,hConv:100,emissivity:0,t2dContactRho:0,t2dPorosityContrast:0});
+ for(const [id,v]of Object.entries(values))$(id).value=v;
+ if(initial)$('convection').checked=true;
+ sharedPower=c.mode==='P'?c.command:null;
+ if(c.mode==='I')$('iset').value=c.command;if(c.mode==='V')$('vset').value=c.command;
+ document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===({I:'cc',V:'cv',P:'auto'}[c.mode])));
+ syncShape();showSection('model');
+ stateNote.textContent=window.sharedConvection?'Shared heater | Direct convection, no wall or radiation':'Shared heater | Local enclosure boundaries';
+ await updateAll();if(dimension==='2d')await solveSelected2D(false);
 };
-// Comparison inputs must not overwrite the user's saved reactor setup.
-$('unifiedSave').addEventListener('click',e=>{if(window.sharedConvection){e.stopImmediatePropagation();alert('Shared comparison mode is session-only. Use the Shared comparison case controls to reproduce it.');}},true);
+window.screenJouleCapture=()=>{
+ if($('shape').value!=='cylinder'||num('voidFraction')!==0)return {unsupported:'Only solid cylinders can currently be shared with 3D. Restore Cylinder with zero void fraction to switch.'};
+ const diameter=Math.cbrt(4*num('nominalVolume')*1000/(Math.PI*num('aspectRatio'))),mode=document.querySelector('.mode-btn.active')?.dataset.mode;
+ return {length:diameter*num('aspectRatio'),diameter,rho:($('rhoUnit').value==='ohm-cm'?num('rhoValue'):num('rhoValue')*1e-4)*.01,k:num('thermalK'),density:num('density'),cp:num('cp'),imax:num('imax'),vmax:num('vmax'),pmax:num('pmax'),mode:mode==='cc'?'I':mode==='cv'?'V':'P',command:mode==='cc'?num('iset'):mode==='cv'?num('vset'):(sharedPower??num('pmax'))};
+};
+const powerLabel=document.createElement('label');powerLabel.textContent='Power setpoint (W)';
+const powerInput=document.createElement('input');powerInput.type='number';powerInput.min='0';powerInput.value='10';powerInput.id='sharedPower';powerLabel.append(powerInput);$('pmax').closest('.field').after(powerLabel);
+const applyShared=window.screenJouleShared;window.screenJouleShared=async c=>{powerInput.value=c.command;powerLabel.hidden=c.mode!=='P';await applyShared(c);};
+powerInput.addEventListener('input',()=>{sharedPower=Math.max(0,Number(powerInput.value));updateAll();});
+const boundaryLabel=document.createElement('label');boundaryLabel.textContent='Thermal boundary';const boundarySelect=document.createElement('select');boundarySelect.innerHTML='<option value="direct">Direct convection</option><option value="enclosure">Reactor enclosure</option>';boundaryLabel.append(boundarySelect);powerLabel.after(boundaryLabel);
+boundarySelect.onchange=()=>{window.sharedConvection=boundarySelect.value==='direct';stateNote.textContent=window.sharedConvection?'Shared heater | Direct convection, no radiation':'Shared heater | Local enclosure boundaries';updateAll();};
+$('unifiedSave').addEventListener('click',e=>{if(window.sharedConvection){e.stopImmediatePropagation();alert('Shared direct-convection settings export is not yet supported.');}},true);
 
   })();
   </script>
