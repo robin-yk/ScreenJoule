@@ -11,7 +11,7 @@ for marker,name in [('/* ENGINE */','engine.js'),('/* APP */','app.js')]:
         import json
         runs=[{k:r[k] for k in ['name','params','reference','classification']} for r in json.loads((root/'validation-literature.json').read_text())['results']]
         code+='\n'+(root/'src/benchmark-ui.js').read_text().replace('/* LITERATURE RUNS */',json.dumps(runs))
-    if name=='app.js': code+='\n'+(root/'src/workspace-polish.js').read_text()
+    if name=='app.js': code+='\n'+(root/'src/workspace-polish.js').read_text()+'\n'+(root/'src/shared-3d.js').read_text()
     html=html.replace(marker,code)
 (root/'dist/joule3d.html').write_text(html.replace('</head>','<style>body>header{display:none}</style></head>').replace('href="index.html" download=','href="joule3d.html" download='))
 print('Built self-contained dist/joule3d.html')

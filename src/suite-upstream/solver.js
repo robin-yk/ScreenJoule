@@ -342,7 +342,7 @@ export function gapRadiationCoefficient(elementK, wallK, elementEmissivity, wall
 }
 
 export function enclosureHeatLoss(T, x, g, cfg=x.enclosure) {
-  if(!cfg)return directSurfaceHeatLoss(T,x,g);
+  if(!cfg||cfg.boundaryMode==='shared-convection')return directSurfaceHeatLoss(T,x,g);
   const elementRadius=g.D/2,wallInnerRadius=elementRadius+cfg.gap,wallOuterRadius=wallInnerRadius+cfg.wallThickness;
   const domainHeight=g.L*60/44,domainRadius=wallOuterRadius*30/22,axialMargin=Math.max((domainHeight-g.L)/2,1e-12);
   const elementSideArea=2*Math.PI*elementRadius*g.L,elementEndArea=Math.PI*elementRadius*elementRadius,wallOutsideArea=2*Math.PI*wallOuterRadius*domainHeight;
@@ -546,6 +546,13 @@ export function allocateSegmentCells(segments, total) {
 }
 
 export function build2DMesh(g, cfg) {
+  if(cfg.boundaryMode==='shared-convection') {
+    const nr=cfg.nr||30,nz=cfg.nz||60,radius=g.D/2,dz=g.L/nz;
+    const edges=Array.from({length:nr+1},(_,i)=>radius*i/nr),centers=edges.slice(1).map((v,i)=>(v+edges[i])/2);
+    const zEdges=Array.from({length:nz+1},(_,j)=>-g.L/2+j*dz),zCenters=zEdges.slice(1).map((v,j)=>(v+zEdges[j])/2);
+    const cellVolume=(i,j)=>Math.PI*(edges[i+1]**2-edges[i]**2)*dz;
+    return {radius,outerRadius:radius,domainRadius:radius,domainHeight:g.L,edges,centers,zEdges,zCenters,dz,nr,nz,nElement:nr,nGap:0,nWall:0,nAir:0,nAirZ:0,nActiveZ:nz,activeStart:0,activeEnd:nz,materialAt:()=>0,cellVolume,elementVolume:Math.PI*radius**2*g.L};
+  }
   const nr=cfg.nr||30,nz=cfg.nz||60,radius=g.D/2,hasGap=cfg.gap>1e-12,outerRadius=radius+cfg.gap+cfg.wallThickness;
   // The surrounding-air blanket reaches domainRatio x the outer radius. It used
   // to be written as nr/(nr-nAir), which tied the *physical* domain to the cell
@@ -907,7 +914,7 @@ export function assemble2DSystem(T, x, g, cfg, material, mesh, op, transient = n
       if(code===2&&nextCode===3)addInterfaceRadiation(p,code,T[j][i],area,face-mesh.centers[i],kp);
     } else {
       const area=2*Math.PI*mesh.edges[mesh.nr]*(mesh.zEdges[j+1]-mesh.zEdges[j]);
-      addBoundary(p,kp*area/Math.max(mesh.edges[mesh.nr]-mesh.centers[i],1e-30),x.ambientK,"outerRadial");
+      addBoundary(p,cfg.boundaryMode==='shared-convection'?area/(1/x.h+(mesh.edges[mesh.nr]-mesh.centers[i])/kp):kp*area/Math.max(mesh.edges[mesh.nr]-mesh.centers[i],1e-30),x.ambientK,"outerRadial");
     }
     if(j<mesh.nz-1) {
       const q=idx(i,j+1),area=axialArea(i),face=mesh.zEdges[j+1],nextCode=mesh.materialAt(i,j+1),kn=kAt(i,j+1,nextCode),elementGas=(code===0&&nextCode===4)||(code===4&&nextCode===0);
@@ -938,8 +945,8 @@ export function assemble2DSystem(T, x, g, cfg, material, mesh, op, transient = n
     // vanishes as h -> 0 cannot converge, and this one drove the observed order
     // negative. Leave the flowing cells to the advection scheme.
     const flowing=flowConnected&&(code===1||code===4);
-    if(j===0&&!flowing) addBoundary(p,kp*axialArea(i)/Math.max(mesh.zCenters[j]-mesh.zEdges[j],1e-30),x.ambientK,"axialAmbient");
-    if(j===mesh.nz-1&&!flowing) addBoundary(p,kp*axialArea(i)/Math.max(mesh.zEdges[j+1]-mesh.zCenters[j],1e-30),x.ambientK,"axialAmbient");
+    if(j===0&&!flowing) addBoundary(p,cfg.boundaryMode==='shared-convection'?axialArea(i)/(1/x.h+(mesh.zCenters[j]-mesh.zEdges[j])/kp):kp*axialArea(i)/Math.max(mesh.zCenters[j]-mesh.zEdges[j],1e-30),x.ambientK,"axialAmbient");
+    if(j===mesh.nz-1&&!flowing) addBoundary(p,cfg.boundaryMode==='shared-convection'?axialArea(i)/(1/x.h+(mesh.zEdges[j+1]-mesh.zCenters[j])/kp):kp*axialArea(i)/Math.max(mesh.zEdges[j+1]-mesh.zCenters[j],1e-30),x.ambientK,"axialAmbient");
   }
 
   if(mesh.nGap>0) {
@@ -1375,4 +1382,3 @@ export function solveThermal2D(x, zeroD, cfg, material) {
   const heCoolingUpper=Math.max(0,HE_CAPACITY_RATE*(avgK-x.gasK));
   return{errors:[],x,zeroD,cfg,material,g,mesh,T,op,avgK,tMin,tMax,deltaT:tMax-tMin,center:T[mid][0],side:T[mid][mesh.nElement-1],bottom:T[bottomRow][0],top:T[topRow][0],wallInner:T[mid][mesh.nElement+mesh.nGap],wallOuter:T[mid][mesh.nElement+mesh.nGap+mesh.nWall-1],boundaryLoss,staticBoundaryLoss:loss.staticLoss,lossByChannel:loss.byChannel,closure,representedVolumeError,heCapacityRate:HE_CAPACITY_RATE,heCooling:loss.gasAdvective,heCoolingUpper,heOutletK:loss.gasOutletK,heFlowConnected:loss.flowConnected,iterations:outer,linearIterations:totalLinear,linearResidual,residual:maxStep,converged:maxStep<=cfg.tolerance,targetReached:avgK>=x.targetK,qVol:op.pBulk/g.envelopeVolume,electrical,porosity};
 }
-

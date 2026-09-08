@@ -3459,7 +3459,7 @@ drawDynChart=function(history,plan){
       const extra=document.querySelector('#thermal2d .t2d-inputs');document.querySelector('#calculator .input-column').append(extra);extra.style.border='0';extra.style.padding='0';for(const el of extra.querySelectorAll('.t2d-controls,#t2dProgress,.section-head-row'))el.hidden=true;
     }
     // Each document has its own memory and persistent settings namespace.
-    for(const event of ['input','change','click'])document.addEventListener(event,e=>{if(restoring||!e.target.closest('input,select,textarea,.mode-btn'))return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(storageKey,JSON.stringify(captureSettings()));}catch{stateNote.textContent='Device storage unavailable | Export settings to retain this model.';}},250);});
+    for(const event of ['input','change','click'])document.addEventListener(event,e=>{if(restoring||window.sharedConvection||!e.target.closest('input,select,textarea,.mode-btn'))return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(storageKey,JSON.stringify(captureSettings()));}catch{stateNote.textContent='Device storage unavailable | Export settings to retain this model.';}},250);});
     $('unifiedSave').onclick=()=>download('joule'+dimension+'-settings.json',JSON.stringify(captureSettings(),null,2));$('unifiedLoad').onclick=()=>$('unifiedFile').click();$('unifiedFile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>2e6)throw Error('Settings file exceeds 2 MB.');restoreSettings(JSON.parse(await f.text()));localStorage.setItem(storageKey,JSON.stringify(captureSettings()));stateNote.textContent='Settings restored for Joule'+dimension.toUpperCase();}catch(err){stateNote.textContent=err.message;}finally{e.target.value='';}};
     try{const saved=localStorage.getItem(storageKey);if(saved)restoreSettings(JSON.parse(saved));}catch{stateNote.textContent='Saved settings could not be restored.';}
     const reference=$('reference'),original=document.createElement('details');original.className='audit';const summary=document.createElement('summary');summary.textContent='Derivations, material data and literature comparisons';original.append(summary);for(const node of Array.from(reference.children))original.append(node);reference.append(original);
@@ -3616,6 +3616,24 @@ drawDynChart=function(history,plan){
     $('smax').parentElement.title=$('savg').parentElement.title='All solid cells, including finite electrodes when enabled';
   }
 })();
+
+
+// Explicit comparison mode; normal enclosure settings remain unchanged.
+const normalBaseInputs=baseInputs,normal2DConfig=get2DConfig;
+get2DConfig=function(){const cfg=normal2DConfig();return window.sharedConvection?{...cfg,boundaryMode:'shared-convection',purge:false,contactRho:0,porosityContrast:0}:cfg;};
+baseInputs=function(){const x=normalBaseInputs();if(window.sharedConvection){x.material={...x.material,rhoTable:undefined,kTable:undefined,cpTable:undefined};x.emissivity=0;x.convection=true;x.gasK=x.ambientK;}return x;};
+window.screenJouleShared=async function(c){
+  window.sharedConvection=true;
+  clearTimeout(saveTimer);
+  const values={shape:'cylinder',voidFraction:0,nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,rhoUnit:'ohm-cm',rhoValue:0.0555556,thermalK:120,density:3210,cp:750,jmax:5e6,imax:40,vmax:150,pmax:c.power,ambientC:20,gasC:20,hConv:100,emissivity:0,t2dContactRho:0,t2dPorosityContrast:0};
+  for(const [id,v]of Object.entries(values))$(id).value=v;
+  $('convection').checked=true;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode==='auto'));
+  syncShape();showSection('model');
+  stateNote.textContent='Shared cylinder | Constant SiC properties | h = 100 W/m²K on all surfaces | No radiation, wall or gas flow | Reload to leave comparison mode';
+  await updateAll();if(dimension==='2d')await solveSelected2D(false);
+};
+// Comparison inputs must not overwrite the user's saved reactor setup.
+$('unifiedSave').addEventListener('click',e=>{if(window.sharedConvection){e.stopImmediatePropagation();alert('Shared comparison mode is session-only. Use the Shared comparison case controls to reproduce it.');}},true);
 
   })();
   </script>
