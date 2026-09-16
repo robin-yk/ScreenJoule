@@ -134,6 +134,18 @@ function materialTable(rows,fallback,name){
 }
 function solveModel(p,progress=()=>{}){
   p={insulationThickness:0,insulationK:.04,...p};
+  const commonBoundary=p.commonBoundary??'local';
+  if(!['local','exposed','insulated'].includes(commonBoundary))throw Error('Unknown thermal boundary.');
+  let wrapResistance=0;
+  if(commonBoundary!=='local'){
+    if(p.flow||p.wall)throw Error('Use local boundaries for resolved gas flow or reactor walls.');
+    if(!(Number.isFinite(p.outerH)&&p.outerH>0&&Number.isFinite(p.outerAmbient)&&p.outerAmbient>-273.15&&p.outerEmissivity>=0&&p.outerEmissivity<=1))throw Error('Invalid external heat-transfer inputs.');
+    if(commonBoundary==='insulated'){
+      if(!(Number.isFinite(p.wrapThickness)&&p.wrapThickness>0&&Number.isFinite(p.wrapK)&&p.wrapK>0))throw Error('Insulation thickness and conductivity must be finite and positive.');
+      wrapResistance=p.wrapThickness/1000/p.wrapK;
+    }
+    p.h=p.hc=p.outerH;p.ambient=p.sink=p.outerAmbient;p.emissivity=p.outerEmissivity;
+  }
   // Homogeneous porous heater: envelope mesh, skeleton mass and body-scale k.
   // Transform a copy so repeated solves and exported inputs retain their basis.
   const porosity=p.porosity??0;
@@ -141,6 +153,9 @@ function solveModel(p,progress=()=>{}){
   const resistivityBasis=p.resistivityBasis??'skeleton';
   if(!['skeleton','effective'].includes(resistivityBasis))throw Error('Unknown resistivity basis.');
   const solidFraction=1-porosity;
+  const processDuty=p.processDuty??0;
+  if(!Number.isFinite(processDuty)||processDuty<0)throw Error('Process duty must be finite and nonnegative.');
+  if(processDuty&&(p.study!=='steady'||p.flow))throw Error('Prescribed process duty requires steady state without resolved gas flow.');
   p.density*=solidFraction;
   if(resistivityBasis==='skeleton'){
     p.rho/=solidFraction;
@@ -161,6 +176,8 @@ function solveModel(p,progress=()=>{}){
   const heaterK=materialTable(p.kCurve,p.k,'Heater k'),heaterCp=materialTable(p.cpCurve,p.cp,'Heater Cp'),electrodeK=materialTable(p.electrodeKCurve,p.electrodeK,'Electrode k'),electrodeCp=materialTable(p.electrodeCpCurve,p.electrodeCp,'Electrode Cp'),electrodeRho=materialTable(p.electrodeRhoCurve,p.electrodeRho,'Electrode resistivity');
   const started=Date.now(),gridKey=geometryKey(p),gridReused=p.reuse!==false&&reusableSolve.gridKey===gridKey;
   const m=gridReused?reusableSolve.mesh:makeGrid(p);reusableSolve.gridKey=gridKey;reusableSolve.mesh=m;const Ns=m.N,SB=5.670374419e-8,Ta=p.ambient+273.15,Tc=p.sink+273.15;
+  const heaterVolume=m.region.reduce((sum,region,i)=>sum+(region?0:cellVolume(m,i)),0);
+  const dutyCell=Float64Array.from({length:Ns},(_,i)=>m.region[i]?0:processDuty*cellVolume(m,i)/heaterVolume);
   for(const key of ['rho','k','cp','density','vmax','imax','pmax','maxTemp'])if(!(p[key]>0&&Number.isFinite(p[key])))throw Error(key+' must be positive.');
   for(const key of ['h','hc','command'])if(!(p[key]>=0&&Number.isFinite(p[key])))throw Error(key+' must be nonnegative.');
   if(!(Ta>0&&Tc>0&&p.initial>-273.15&&p.emissivity>=0&&p.emissivity<=1&&Number.isFinite(p.alpha)))throw Error('Invalid temperature, emissivity or resistivity coefficient.');
@@ -213,8 +230,8 @@ function solveModel(p,progress=()=>{}){
     const diag=new Float64Array(N),rhs=new Float64Array(N);let ambient=0,contacts=0;
     for(const face of m.faces){
       const [a,axis,sign,terminal]=face,fm=faceMetric(m,face);
-      const cond=(m.region[a]?electrodeK:heaterK).value(temp[a])/fm.distance,target=terminal?Tc:Ta;let h=p.hc;
-      if(!terminal){
+      const cond=1/(fm.distance/(m.region[a]?electrodeK:heaterK).value(temp[a])+wrapResistance),target=terminal?Tc:Ta;let h=p.hc;
+      if(!terminal||commonBoundary!=='local'){
         let surface=temp[a];
         for(let j=0;j<10;j++)surface+=(cond*(temp[a]-surface)-p.h*(surface-Ta)-p.emissivity*SB*(surface**4-Ta**4))/(cond+p.h+4*p.emissivity*SB*surface**3);
         h=p.h+p.emissivity*SB*(surface+Ta)*(surface*surface+Ta*Ta);
@@ -230,7 +247,7 @@ function solveModel(p,progress=()=>{}){
     for(let it=0;it<140;it++){
       refreshThermal(guess);
       const e=electrical(guess,on),b=boundaries(guess),diag=Float64Array.from(base),rhs=new Float64Array(N);
-      for(let i=0;i<N;i++){const mass=dt?secantCapacity(i,old[i],guess[i])/dt:0;diag[i]+=b.diag[i]+mass;rhs[i]=(e.heat[i]||0)+b.rhs[i]+mass*old[i];}
+      for(let i=0;i<N;i++){const mass=dt?secantCapacity(i,old[i],guess[i])/dt:0;diag[i]+=b.diag[i]+mass;rhs[i]=(e.heat[i]||0)-(dutyCell[i]||0)+b.rhs[i]+mass*old[i];}
       const next=network?bicg(diag,thermalEdges,gt,network.advection,rhs,guess):cg(diag,thermalEdges,gt,rhs,guess);let delta=0;
       // Damped, bounded Picard step avoids cold-start radiation overshoot.
       // Test convergence with the full fixed-point residual, never the bounded step.
@@ -248,7 +265,7 @@ function solveModel(p,progress=()=>{}){
     refreshThermal(guess);lastE=electrical(guess,on);previousVoltage=lastE.V;lastB=boundaries(guess);
     const storage=dt?guess.reduce((s,t,i)=>s+heatChange(i,old[i],t)/dt,0):0;
     lastRate=dt?guess.slice(0,Ns).reduce((s,t,i)=>s+(t-old[i])*cellVolume(m,i)/dt,0)/volume:0;
-    lastError=Math.abs(lastE.P-lastB.ambient-lastB.contacts-storage)/Math.max(Math.abs(lastE.P),Math.abs(lastB.ambient)+Math.abs(lastB.contacts),Math.abs(storage),1e-8);
+    lastError=Math.abs(lastE.P-processDuty-lastB.ambient-lastB.contacts-storage)/Math.max(Math.abs(lastE.P),processDuty+Math.abs(lastB.ambient)+Math.abs(lastB.contacts),Math.abs(storage),1e-8);
     return {temp:guess,storage};
   }
   const history=[];let inputEnergy=0,lossEnergy=0,time=0,steps=0;

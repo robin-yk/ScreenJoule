@@ -13,7 +13,7 @@ async function selectModel(key){
   const c=frames[active].contentWindow.screenJouleCapture();
   if(active==='3d')preserve3D=Boolean(c.unsupported);
   if(!c.unsupported){
-   if(Object.entries(c).some(([k,v])=>k!=='mode'&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
+   if(Object.entries(c).some(([k,v])=>!['mode','commonBoundary'].includes(k)&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
    shared=c;
   }
  }

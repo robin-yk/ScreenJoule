@@ -218,6 +218,7 @@ function porousInputErrors(x) {
 
 export function validateInput(x) {
   const errors = porousInputErrors(x);
+  if(x.commonBoundary&&x.commonBoundary!=='local'&&(!(x.h>0)||!finite(x.surfaceResistance)||x.surfaceResistance<0))errors.push('External h must be positive and insulation resistance finite and nonnegative.');
   const positive = [
     ["Electrical resistivity", x.material.rhoOhmCm],
     ["Density", x.material.density],
@@ -326,6 +327,10 @@ export function equivalentCylinder(x, material) {
 }
 
 export function directSurfaceHeatLoss(T, x, g) {
+  if(x.commonBoundary&&x.commonBoundary!=='local'){
+    const u=commonSurfaceConductance(T,x,0);
+    return {total:u*g.surface*(T-x.ambientK),side:u*g.surface*(T-x.ambientK),end:0,wallK:x.ambientK,heAdvective:0,heOutletK:x.ambientK,model:'Equivalent surface insulation'};
+  }
   const radiation=x.emissivity*SIGMA_SB*g.surface*(Math.pow(T,4)-Math.pow(x.ambientK,4));
   const convection=x.convection?x.h*g.surface*(T-x.gasK):0;
   return {total:radiation+convection,side:radiation+convection,end:0,wallK:x.ambientK,heAdvective:0,heOutletK:x.gasK,model:"direct surface"};
@@ -333,6 +338,16 @@ export function directSurfaceHeatLoss(T, x, g) {
 
 export function radiationCoefficient(tempK, sinkK, emissivity) {
   return emissivity*SIGMA_SB*(tempK+sinkK)*(tempK*tempK+sinkK*sinkK);
+}
+
+// Constant-area insulation resistance plus external convection/radiation.
+export function commonSurfaceConductance(T,x,halfResistance=0){
+ const r=halfResistance+(x.surfaceResistance||0),a=x.ambientK;
+ if(!r)return x.h+radiationCoefficient(T,a,x.emissivity);
+ let s=T;
+ for(let i=0;i<30;i++)s-=((s-T)/r+x.h*(s-a)+x.emissivity*SIGMA_SB*(s**4-a**4))/(1/r+x.h+4*x.emissivity*SIGMA_SB*s**3);
+ const film=x.h+radiationCoefficient(s,a,x.emissivity);
+ return 1/(r+1/film);
 }
 
 export function gapRadiationCoefficient(elementK, wallK, elementEmissivity, wallEmissivity, elementRadius, wallRadius) {
@@ -914,7 +929,7 @@ export function assemble2DSystem(T, x, g, cfg, material, mesh, op, transient = n
       if(code===2&&nextCode===3)addInterfaceRadiation(p,code,T[j][i],area,face-mesh.centers[i],kp);
     } else {
       const area=2*Math.PI*mesh.edges[mesh.nr]*(mesh.zEdges[j+1]-mesh.zEdges[j]);
-      addBoundary(p,cfg.boundaryMode==='shared-convection'?area/(1/x.h+(mesh.edges[mesh.nr]-mesh.centers[i])/kp):kp*area/Math.max(mesh.edges[mesh.nr]-mesh.centers[i],1e-30),x.ambientK,"outerRadial");
+      addBoundary(p,cfg.boundaryMode==='shared-convection'?area*commonSurfaceConductance(T[j][i],x,(mesh.edges[mesh.nr]-mesh.centers[i])/kp):kp*area/Math.max(mesh.edges[mesh.nr]-mesh.centers[i],1e-30),x.ambientK,"outerRadial");
     }
     if(j<mesh.nz-1) {
       const q=idx(i,j+1),area=axialArea(i),face=mesh.zEdges[j+1],nextCode=mesh.materialAt(i,j+1),kn=kAt(i,j+1,nextCode),elementGas=(code===0&&nextCode===4)||(code===4&&nextCode===0);
@@ -945,8 +960,8 @@ export function assemble2DSystem(T, x, g, cfg, material, mesh, op, transient = n
     // vanishes as h -> 0 cannot converge, and this one drove the observed order
     // negative. Leave the flowing cells to the advection scheme.
     const flowing=flowConnected&&(code===1||code===4);
-    if(j===0&&!flowing) addBoundary(p,cfg.boundaryMode==='shared-convection'?axialArea(i)/(1/x.h+(mesh.zCenters[j]-mesh.zEdges[j])/kp):kp*axialArea(i)/Math.max(mesh.zCenters[j]-mesh.zEdges[j],1e-30),x.ambientK,"axialAmbient");
-    if(j===mesh.nz-1&&!flowing) addBoundary(p,cfg.boundaryMode==='shared-convection'?axialArea(i)/(1/x.h+(mesh.zEdges[j+1]-mesh.zCenters[j])/kp):kp*axialArea(i)/Math.max(mesh.zEdges[j+1]-mesh.zCenters[j],1e-30),x.ambientK,"axialAmbient");
+    if(j===0&&!flowing) addBoundary(p,cfg.boundaryMode==='shared-convection'?axialArea(i)*commonSurfaceConductance(T[j][i],x,(mesh.zCenters[j]-mesh.zEdges[j])/kp):kp*axialArea(i)/Math.max(mesh.zCenters[j]-mesh.zEdges[j],1e-30),x.ambientK,"axialAmbient");
+    if(j===mesh.nz-1&&!flowing) addBoundary(p,cfg.boundaryMode==='shared-convection'?axialArea(i)*commonSurfaceConductance(T[j][i],x,(mesh.zEdges[j+1]-mesh.zCenters[j])/kp):kp*axialArea(i)/Math.max(mesh.zEdges[j+1]-mesh.zCenters[j],1e-30),x.ambientK,"axialAmbient");
   }
 
   if(mesh.nGap>0) {
