@@ -9,4 +9,8 @@ test('shared convection cylinder agrees with lumped balance at small Biot number
  assert(Math.abs(z.tss-(293.15+10/(100*(Math.PI*.01*.015+2*Math.PI*.005**2))))<1e-6);
  assert(Math.abs(r.avgK-z.tss)<.3);
  assert(r.representedVolumeError<1e-12);
+ const insulated={...x,commonBoundary:'insulated',surfaceResistance:.01,emissivity:.8};
+ const iz=calculate(insulated),ir=solveThermal2D(insulated,iz,cfg,x.material);
+ assert(ir.converged);assert(ir.closure<1e-6);
+ assert(Math.abs(ir.avgK-iz.tss)<1);
 });

@@ -12,7 +12,7 @@ async function selectModel(key){
  if(active&&frames[active]?.contentWindow.screenJouleCapture){
   const c=frames[active].contentWindow.screenJouleCapture();
   if(c.unsupported){alert(c.unsupported);return;}
-  if(Object.entries(c).some(([k,v])=>k!=='mode'&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
+  if(Object.entries(c).some(([k,v])=>!['mode','commonBoundary'].includes(k)&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
   shared=c;
  }
  switching=true;

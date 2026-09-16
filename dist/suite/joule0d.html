@@ -1968,7 +1968,7 @@
       boundary(result.mesh.domainRadius,-physicalHeight/2,physicalHeight/2,"#8bb9cf",2);
       ctx.strokeStyle="rgba(255,255,255,.78)";ctx.lineWidth=1.4;ctx.setLineDash([7,6]);ctx.beginPath();ctx.moveTo(cx,oy);ctx.lineTo(cx,oy+plotHeight);ctx.stroke();ctx.setLineDash([]);
       const elementTopY=oy+(physicalHeight/2-result.g.L/2)*scale,flowX=cx,flowTop=oy+1.2*ch,flowBottom=Math.max(flowTop+28,elementTopY-1.2*ch);
-      ctx.save();ctx.lineCap="round";ctx.strokeStyle="rgba(255,255,255,.92)";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(flowX,flowTop);ctx.lineTo(flowX,flowBottom);ctx.stroke();ctx.strokeStyle="#102a43";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(flowX,flowTop);ctx.lineTo(flowX,flowBottom);ctx.stroke();ctx.fillStyle="#102a43";ctx.beginPath();ctx.moveTo(flowX,flowBottom+12);ctx.lineTo(flowX-9,flowBottom-3);ctx.lineTo(flowX+9,flowBottom-3);ctx.closePath();ctx.fill();ctx.font="500 17px Roboto, Arial";ctx.textAlign="left";ctx.fillText("He 50 sccm",flowX+15,flowTop+21);ctx.font="15px Roboto, Arial";ctx.fillText("top → bottom",flowX+15,flowTop+42);ctx.restore();
+      if(result.heFlowConnected){ctx.save();ctx.lineCap="round";ctx.strokeStyle="rgba(255,255,255,.92)";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(flowX,flowTop);ctx.lineTo(flowX,flowBottom);ctx.stroke();ctx.strokeStyle="#102a43";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(flowX,flowTop);ctx.lineTo(flowX,flowBottom);ctx.stroke();ctx.fillStyle="#102a43";ctx.beginPath();ctx.moveTo(flowX,flowBottom+12);ctx.lineTo(flowX-9,flowBottom-3);ctx.lineTo(flowX+9,flowBottom-3);ctx.closePath();ctx.fill();ctx.font="500 17px Roboto, Arial";ctx.textAlign="left";ctx.fillText("He 50 sccm",flowX+15,flowTop+21);ctx.font="15px Roboto, Arial";ctx.fillText("top → bottom",flowX+15,flowTop+42);ctx.restore();}
       $("t2dMapTitle").textContent=spec.title;
       $("t2dScaleLabel").textContent=spec.scale;
       $("t2dScaleMin").textContent=uniform?"uniform":spec.text(lo);
@@ -3651,6 +3651,70 @@ powerInput.addEventListener('input',()=>{sharedPower=Math.max(0,Number(powerInpu
 const boundaryLabel=document.createElement('label');boundaryLabel.textContent='Thermal boundary';const boundarySelect=document.createElement('select');boundarySelect.innerHTML='<option value="direct">Direct convection</option><option value="enclosure">Reactor enclosure</option>';boundaryLabel.append(boundarySelect);powerLabel.after(boundaryLabel);
 boundarySelect.onchange=()=>{window.sharedConvection=boundarySelect.value==='direct';stateNote.textContent=window.sharedConvection?'Shared heater | Direct convection, no radiation':'Shared heater | Local enclosure boundaries';updateAll();};
 $('unifiedSave').addEventListener('click',e=>{if(window.sharedConvection){e.stopImmediatePropagation();alert('Shared direct-convection settings export is not yet supported.');}},true);
+
+// Common thermal envelope UI. Local reactor/electrode settings are preserved.
+(()=>{
+ const is3d=!!document.getElementById('rho'),get=id=>document.getElementById(id);
+ const panel=document.createElement('details');panel.open=true;
+ panel.className='common-thermal-panel';
+ panel.innerHTML='<summary>Thermal surroundings</summary><label>Boundary<select id="commonBoundary"><option value="exposed">Exposed to surroundings</option><option value="insulated">Finite insulation layer</option><option value="local" selected>Local reactor / electrode settings</option></select></label><div id="commonExternal"><label>Outside air temperature (°C)<input id="outerAmbient" type="number" value="20" step="any"></label><label>External convection h (W/m² K)<input id="outerH" type="number" value="100" min="0.01" step="any"></label><label>Outer-surface emissivity<input id="outerEmissivity" type="number" value="0" min="0" max="1" step="0.1"></label><div id="wrapInputs"><label>Insulation thickness (mm)<input id="wrapThickness" type="number" value="5" min="0.01" step="any"></label><label>Insulation k (W/m K)<input id="wrapK" type="number" value="0.1" min="0.0001" step="any"></label></div><p class="note">Uniform equivalent layer on all external faces, including ends. Outer radiation uses the outside temperature. Constant area; insulation heat storage and resolved wall geometry are omitted. Use local settings for separate electrodes, walls or gas flow.</p></div>';
+ if(is3d)get('material').closest('details').before(panel);else{boundaryLabel.before(panel);boundaryLabel.hidden=true;}
+ const names=['commonBoundary','outerAmbient','outerH','outerEmissivity','wrapThickness','wrapK'];
+ const read=()=>Object.fromEntries(names.map(id=>[id,id==='commonBoundary'?get(id).value:Number(get(id).value)]));
+ function display(){const mode=get('commonBoundary').value;get('commonExternal').hidden=mode==='local';get('wrapInputs').hidden=mode!=='insulated';if(!is3d){window.sharedConvection=mode!=='local';if(mode!=='local'&&get('t2dHover'))get('t2dHover').textContent='Move over a cell to inspect the calculated solid temperature.';}}
+ function check(v){if(v.commonBoundary==='local')return;
+   if(!Number.isFinite(v.outerAmbient)||v.outerAmbient<=-273.15||!Number.isFinite(v.outerH)||v.outerH<=0||!Number.isFinite(v.outerEmissivity)||v.outerEmissivity<0||v.outerEmissivity>1)throw Error('Enter valid outside temperature, positive h and emissivity from 0 to 1.');
+   if(v.commonBoundary==='insulated'&&(!Number.isFinite(v.wrapThickness)||v.wrapThickness<=0||!Number.isFinite(v.wrapK)||v.wrapK<=0))throw Error('Insulation thickness and conductivity must be finite and positive.');
+ }
+ if(is3d){keys.push(...names);strings.add('commonBoundary');const oldControls=controls;controls=function(){oldControls();display();};}
+ else{
+   const base=baseInputs;
+   baseInputs=function(){const x=base(),v=read();check(v);if(v.commonBoundary!=='local')Object.assign(x,{commonBoundary:v.commonBoundary,surfaceResistance:v.commonBoundary==='insulated'?v.wrapThickness/1000/v.wrapK:0,ambientK:v.outerAmbient+273.15,gasK:v.outerAmbient+273.15,h:v.outerH,convection:true,emissivity:v.outerEmissivity});return x;};
+ }
+ names.forEach(id=>get(id).addEventListener('input',()=>{display();if(is3d)invalidate();else{try{updateAll();}catch(e){stateNote.textContent=e.message;}}}));
+ const capture=window.screenJouleCapture,apply=window.screenJouleShared;
+ window.screenJouleCapture=()=>{const v=read();try{check(v);}catch(e){return {unsupported:e.message};}const c=capture();return c.unsupported?c:{...c,...v};};
+ window.screenJouleShared=async c=>{for(const id of names)if(c[id]!==undefined)get(id).value=c[id];if(c.commonBoundary===undefined)get('commonBoundary').value='exposed';display();await apply(c);if(!is3d)stateNote.textContent=get('commonBoundary').value==='local'?'Local reactor boundaries':'Shared thermal surroundings';};
+ display();
+})();
+
+// Separate 0D design aid: never silently replaces the active reactor boundaries.
+(()=>{
+ if(document.documentElement.dataset.dimension!=='0d')return;
+ const host=document.querySelector('.common-thermal-panel');if(!host)return;
+ const box=document.createElement('details');box.className='common-thermal-panel';box.style.gridColumn='1 / -1';
+ box.innerHTML=`<summary>Insulation screening</summary>
+ <p class="note">Uses the current element envelope area. Fixed delivered heater power; finite equivalent layer on all faces. Supply limits are evaluated separately in the main model.</p>
+ <label>Mode<select id="insMode"><option value="design">Target-temperature design</option><option value="estimate">Measured-temperature heat-loss estimate</option></select></label>
+ <label>Delivered heater power (W)<input id="insPower" type="number" value="100" min="0" step="any"></label>
+ <label>Process + gas heat duty (W)<input id="insDuty" type="number" value="0" min="0" step="any"></label>
+ <label>Target / measured temperature (°C)<input id="insTarget" type="number" value="800" step="any"></label>
+ <label>Outside temperature (°C)<input id="insAmbient" type="number" value="20" step="any"></label>
+ <label>External h (W/m² K)<input id="insH" type="number" value="12" min="0" step="any"></label>
+ <label>Outer-surface emissivity<input id="insEps" type="number" value="0.8" min="0" max="1" step="any"></label>
+ <label>Assumed insulation k (W/m K)<input id="insK" type="number" value="0.1" min="0" step="any"></label>
+ <label>Plot thickness range (mm)<input id="insRange" type="number" value="20" min="0" step="any"></label>
+ <button type="button" id="insRun">Evaluate insulation</button>
+ <div id="insResult" role="status" aria-live="polite"></div>
+ <p class="note">Equivalent constant-area resistance, not a resolved thick shell. Separate from local walls and electrodes. Enter power delivered to the element after lead/contact losses. Estimated resistance can include unmodeled losses; inferred thickness depends on assumed k. Check material temperature limits independently.</p>`;
+ host.after(box);
+ const el=id=>box.querySelector('#'+id),val=id=>Number(el(id).value),fmt=x=>Number(x.toPrecision(4)).toString();
+ el('insRun').addEventListener('click',async()=>{
+  try{
+   const {assessInsulation}=await import('./insulation.js');
+   const x=baseInputs(),g=geometry(x);
+   if(!Number.isFinite(g.surface)||g.surface<=0)throw Error('Enter valid element dimensions first.');
+   const r=assessInsulation({area:g.surface,power:val('insPower'),duty:val('insDuty'),targetC:val('insTarget'),ambientC:val('insAmbient'),h:val('insH'),emissivity:val('insEps'),k:val('insK'),maxMm:val('insRange')});
+   const inferred=el('insMode').value==='estimate';
+   const maxT=Math.max(...r.samples.map(p=>p.tempC),val('insTarget')),minT=Math.min(r.outerC,val('insTarget'));
+   const xx=v=>65+v/val('insRange')*440,yy=v=>430-(v-minT)/Math.max(1,maxT-minT)*370;
+   const points=r.samples.map(p=>`${xx(p.mm)},${yy(p.tempC)}`).join(' ');
+   const ticks=Array.from({length:5},(_,i)=>{const mm=val('insRange')*i/4,t=minT+(maxT-minT)*i/4;return `<text x="${xx(mm)}" y="455" text-anchor="middle">${fmt(mm)}</text><text x="58" y="${yy(t)+4}" text-anchor="end">${fmt(t)}</text>`;}).join('');
+   el('insResult').innerHTML=`<p>Envelope area: ${fmt(g.surface*1e4)} cm² | Net heating: ${fmt(r.netPower)} W</p><p>${r.status==='no-insulation-needed'?'Exposed surroundings already reach or exceed this temperature. Reduce power or increase cooling.':`${inferred?'Estimated equivalent':'Required equivalent'} thickness: <strong>${fmt(r.requiredMm)} mm</strong> | Resistance: ${fmt(r.resistance)} m² K/W`}</p><p>Exposed power needed at this temperature: ${fmt(r.exposedPower)} W. Predicted outside surface: ${fmt(r.outerC)} °C.</p>
+   <svg viewBox="0 0 540 480" style="width:100%;min-height:480px" role="img" aria-label="Temperature versus equivalent insulation thickness at fixed delivered power"><path d="M65 50V430H505" fill="none" stroke="currentColor"/><polyline points="${points}" fill="none" stroke="#bc6428" stroke-width="2"/><path d="M65 ${yy(val('insTarget'))}H505" stroke="#555" stroke-dasharray="5 4"/><text x="280" y="477" text-anchor="middle">Equivalent thickness (mm)</text><text x="16" y="240" transform="rotate(-90 16 240)" text-anchor="middle">Temperature (°C)</text>${ticks}</svg><p class="note">Dashed: target / measured temperature. Solid: fixed-power estimate; not a material operating rating. ${r.requiredMm>val('insRange')?'Required thickness exceeds the displayed range.':''}</p>`;
+  }catch(e){el('insResult').textContent=e.message;}
+ });
+})();
 
   })();
   </script>
