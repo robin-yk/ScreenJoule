@@ -1,5 +1,11 @@
 'use strict';
 const $=id=>document.getElementById(id);
+const electrodeToggle=document.createElement('label');
+electrodeToggle.innerHTML='<input id="showElectrodes" type="checkbox" checked> Electrodes';
+$('fit').before(electrodeToggle);
+const electrodeNote=document.createElement('p');electrodeNote.className='note';
+$('viewhint').after(electrodeNote);
+$('showElectrodes').oninput=()=>draw();
 const keys=['meshType','nr','nt','initialMode','shape','length','width','height','bore','n','rho','k','alpha','density','cp','contact','offsetA','offsetB','mode','command','vmax','imax','pmax','ambient','sink','h','emissivity','hc','maxTemp','study','duration','dt','period','duty','initial','channelWidth','channelHeight','flowRate','gasInlet','mu','gasDensity','gasCp','gasK','wallThickness','wallK','wallCp','wallDensity','wallEmissivity','insulationThickness','insulationK','contactR','thermalR','slew','jlimit','limitAction','nx','ny','nz','targetLow','targetHigh','flowUnit','outletPressure','electrodeLength','electrodeRho','electrodeK','electrodeCp','electrodeDensity','wallGeometry','wallWidth','wallHeight'];
 const strings=new Set(['meshType','initialMode','shape','mode','study','limitAction','flowUnit','wallGeometry']);
 keys.push('porosity','resistivityBasis');strings.add('resistivityBasis');
@@ -66,7 +72,7 @@ function draw(){
   }
   drawn.sort((a,b)=>a.depth-b.depth);
   for(const face of drawn){c.beginPath();face.points.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.fillStyle=face.fill;c.fill();c.strokeStyle=$('mesh').checked?'rgba(20,35,60,.35)':face.fill;c.lineWidth=$('mesh').checked?.55:.5;c.stroke();}
-  for(const[list,label]of [[m.termA,'A'],[m.termB,'B']]){if(!list.length)continue;const q=[0,0,m.xyz[list[0]][2]+(label==='A'?-1:1)*m.d[2]/2];for(const a of list){q[0]+=m.xyz[a][0]/list.length;q[1]+=m.xyz[a][1]/list.length;}const r=proj(q);c.fillStyle='#292929';c.beginPath();c.arc(r[0],r[1],11,0,2*Math.PI);c.fill();c.fillStyle='#fff';c.font= '14px Helvetica, Arial, sans-serif' ;c.textAlign='center';c.textBaseline='middle';c.fillText(label,r[0],r[1]);}
+  electrodeNote.textContent=$('showElectrodes').checked&&m===model?drawElectrodeOverlay(c,m,proj,shown):'';
   [['X','#a5373c',[1,0,0]],['Y','#247858',[0,1,0]],['Z','#235fbc',[0,0,1]]].forEach(([name,color,q])=>{const r=rotation(q);c.strokeStyle=color;c.beginPath();c.moveTo(48,h-49);c.lineTo(48+r[0]*30,h-49-r[1]*30);c.stroke();c.fillStyle=color;c.font= '13px Helvetica, Arial, sans-serif' ;c.fillText(name,48+r[0]*40,h-49-r[1]*40);});
   $('viewhint').textContent=(result?'Solved field':liveTemperature?'Iteration preview (not converged)':'Geometry preview')+' | drag to rotate | scroll to zoom'+(axis>=0?' | '+['X','Y','Z'][axis]+' ≤ '+fmt(threshold*1000)+' mm':'');
 }

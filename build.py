@@ -6,7 +6,7 @@ html=html.replace('</head>','<style>'+(root/'src/workspace-polish.css').read_tex
 for marker,name in [('/* ENGINE */','engine.js'),('/* APP */','app.js')]:
     code=(root/'src'/name).read_text()
     if name=='engine.js': code=(root/'src/flow.js').read_text()+'\n'+(root/'src/wall3d.js').read_text()+'\n'+code
-    if name=='app.js': code=(root/'src/materials.js').read_text()+'\n'+(root/'src/figures.js').read_text()+'\n'+(root/'src/figure-ui.js').read_text()+'\n'+code; code+='\n'+(root/'src/enhancements.js').read_text()+'\n'+(root/'src/screening-core.js').read_text()+'\n'+(root/'src/screening.js').read_text()+'\n'+(root/'src/material-ui.js').read_text()
+    if name=='app.js': code=(root/'src/electrode-overlay.js').read_text()+'\n'+(root/'src/materials.js').read_text()+'\n'+(root/'src/figures.js').read_text()+'\n'+(root/'src/figure-ui.js').read_text()+'\n'+code; code+='\n'+(root/'src/enhancements.js').read_text()+'\n'+(root/'src/screening-core.js').read_text()+'\n'+(root/'src/screening.js').read_text()+'\n'+(root/'src/material-ui.js').read_text()
     if name=='app.js':
         import json
         runs=[{k:r[k] for k in ['name','params','reference','classification']} for r in json.loads((root/'validation-literature.json').read_text())['results']]
