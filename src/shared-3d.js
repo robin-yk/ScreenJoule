@@ -1,6 +1,11 @@
 let shared3DInitialized=false;
-window.screenJouleShared=async function(c){
+window.screenJouleShared=async function(c,{initialPreview=false}={}){
   if(worker){worker.terminate();solverWorker=null;worker=null;setBusy(false);}
+  if(initialPreview){
+    loadParameters({...params(),shape:'tube',meshType:'annular',nr:4,nt:64,nz:48,length:30,width:12,bore:8});
+    shared3DInitialized=true;
+    return;
+  }
   const initial=shared3DInitialized?{}:{shape:'rod',meshType:'cartesian',bore:0,nx:32,ny:32,nz:48,alpha:0,rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,flow:false,wall:false,h:100,hc:100,emissivity:0,ambient:20,sink:20,study:'steady',parts:[],triangles:null,jlimit:0};
   loadParameters({...params(),...initial,porosity:c.porosity??0,resistivityBasis:'skeleton',length:c.length,width:c.diameter,height:c.diameter,rho:c.rho,k:c.k,density:c.density,cp:c.cp,mode:c.mode,command:c.command,imax:c.imax,vmax:c.vmax,pmax:c.pmax});
   shared3DInitialized=true;

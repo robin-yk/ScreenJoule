@@ -224,7 +224,7 @@ function solveModel(p,progress=()=>{}){
     }
     return {diag,rhs,ambient,contacts};
   }
-  let lastE,lastB,lastRate=0,lastError=0,iterations=0,previousVoltage=0,activeDt=0;
+  let lastE,lastB,lastRate=0,lastError=0,iterations=0,previousVoltage=0,activeDt=0,lastPreview=-Infinity;
   function advance(old,dt,on,time){
     activeDt=dt;let guess=Float64Array.from(old),converged=false;
     for(let it=0;it<140;it++){
@@ -235,7 +235,13 @@ function solveModel(p,progress=()=>{}){
       // Damped, bounded Picard step avoids cold-start radiation overshoot.
       // Test convergence with the full fixed-point residual, never the bounded step.
       for(let i=0;i<N;i++){delta=Math.max(delta,Math.abs(next[i]-guess[i]));guess[i]+=Math.max(-100,Math.min(100,.3*(next[i]-guess[i])));if(!Number.isFinite(guess[i])||guess[i]>p.maxTemp+273.15||guess[i]<=0)throw Error('Temperature left the specified calculation range. Reduce the input or adjust the model.');}
-      iterations++;if(it%5===0)progress({time,iteration:it+1,delta,cells:N});
+      iterations++;
+      const now=Date.now(),sendField=p.livePreview&&now-lastPreview>=150;
+      if(it%5===0||sendField){
+        const update={time,iteration:it+1,delta,cells:N};
+        if(sendField){update.temperature=Float64Array.from(guess.subarray(0,Ns),t=>t-273.15);lastPreview=now;}
+        progress(update);
+      }
       if(delta<2e-6){converged=true;break;}
     }
     if(!converged)throw Error('Electrothermal iteration did not converge. A steady solution has not been established.');

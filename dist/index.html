@@ -6,21 +6,23 @@ header nav{gap:20px}header nav button{border-radius:0;background:transparent;col
 </style></head><body><header><a class="brand" href="./" aria-label="ScreenJoule home"><b>ScreenJoule</b></a><nav aria-label="Model dimension" role="tablist"><button id="tab0d" role="tab" aria-selected="true" aria-controls="frame0d">0D</button><button id="tab2d" role="tab" aria-selected="false" aria-controls="frame2d">2D</button><button id="tab3d" role="tab" aria-selected="false" aria-controls="frame3d">3D</button></nav><span id="scope">Lumped energy balance</span><a class="group-link" href="https://dion.che.udel.edu/" target="_blank" rel="noopener noreferrer">Vlachos Group</a></header><main id="models"></main><script>
 const descriptions={'0d':'Lumped energy balance','2d':'Axisymmetric electrothermal field','3d':'Spatial electrothermal field | Stokes flow'},frames={};
 function displayModel(key){if(!descriptions[key])key='0d';if(!frames[key]){const frame=document.createElement('iframe');frame.id='frame'+key;frame.title='Joule'+key.toUpperCase()+' independent workspace';frame.src=key==='3d'?'joule3d.html':'suite/joule'+key+'.html';frame.setAttribute('role','tabpanel');frame.setAttribute('aria-labelledby','tab'+key);document.getElementById('models').append(frame);frames[key]=frame;}for(const k of Object.keys(descriptions)){document.getElementById('tab'+k).setAttribute('aria-selected',String(k===key));if(frames[k])frames[k].hidden=k!==key;}document.getElementById('scope').textContent=descriptions[key];history.replaceState(null,'','#joule'+key);}
-let shared={length:15,diameter:10,rho:.000555556,k:120,density:3210,cp:750,mode:'P',command:10,imax:40,vmax:150,pmax:2000},active=null,switching=false;
+let shared={length:15,diameter:10,rho:.000555556,k:120,density:3210,cp:750,mode:'P',command:10,imax:40,vmax:150,pmax:2000},active=null,switching=false,preserve3D=false;
 async function selectModel(key){
  if(switching||key===active)return;
  if(active&&frames[active]?.contentWindow.screenJouleCapture){
   const c=frames[active].contentWindow.screenJouleCapture();
-  if(c.unsupported){alert(c.unsupported);return;}
-  if(Object.entries(c).some(([k,v])=>k!=='mode'&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
-  shared=c;
+  if(active==='3d')preserve3D=Boolean(c.unsupported);
+  if(!c.unsupported){
+   if(Object.entries(c).some(([k,v])=>k!=='mode'&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
+   shared=c;
+  }
  }
  switching=true;
  try{
   displayModel(key);
   const w=frames[key].contentWindow,start=Date.now();
   while(!w.screenJouleShared){if(Date.now()-start>30000)throw Error('Workspace did not load.');await new Promise(r=>setTimeout(r,100));}
-  await w.screenJouleShared(shared);active=key;
+  if(!(key==='3d'&&preserve3D))await w.screenJouleShared(shared,{initialPreview:active===null&&key==='3d'});active=key;
  }catch(e){alert(e.message);}finally{switching=false;}
 }
 for(const k of Object.keys(descriptions))document.getElementById('tab'+k).onclick=()=>selectModel(k);
