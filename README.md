@@ -1,6 +1,6 @@
 # ScreenJoule
 
-Electrothermal design of reactor elements under power-supply and electrode constraints.
+Electrothermal reactor-element models in 0D, 2D and 3D.
 
 ScreenJoule provides browser workspaces for lumped (0D) screening, axisymmetric (2D) temperature fields, and three-dimensional electrode and geometry studies. Calculations run in JavaScript in the browser. Python is used to assemble the static pages and redraw research figures; it is not a server-side solver.
 
