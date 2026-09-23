@@ -1,0 +1,177 @@
+{
+  "i": 0,
+  "name": "Hollow tube",
+  "parameters": {
+    "alpha": 0,
+    "ambient": 25,
+    "bore": 6.061556985646202,
+    "channelHeight": 24,
+    "channelWidth": 24,
+    "command": 100,
+    "contact": 100,
+    "contactR": 0,
+    "cp": 680,
+    "cpCurve": [],
+    "density": 3050,
+    "dt": 0.25,
+    "duration": 2,
+    "duty": 0.5,
+    "electrodeCp": 385,
+    "electrodeCpCurve": [],
+    "electrodeDensity": 8960,
+    "electrodeK": 400,
+    "electrodeKCurve": [],
+    "electrodeLength": 0,
+    "electrodeRho": 1.7e-8,
+    "electrodeRhoCurve": [],
+    "emissivity": 0.8,
+    "flow": false,
+    "flowRate": 5,
+    "flowUnit": "actual",
+    "gasCp": 1005,
+    "gasDensity": 1.2,
+    "gasInlet": 25,
+    "gasK": 0.026,
+    "h": 15,
+    "hc": 0,
+    "height": 9.429088644338536,
+    "imax": 40,
+    "initial": 25,
+    "initialMode": "uniform",
+    "initialState": null,
+    "insulationK": 0.04,
+    "insulationThickness": 0,
+    "jlimit": 5000000,
+    "k": 140,
+    "kCurve": [
+      [
+        20,
+        140
+      ],
+      [
+        600,
+        60
+      ],
+      [
+        1000,
+        45
+      ],
+      [
+        1350,
+        40
+      ]
+    ],
+    "length": 24.91780014392056,
+    "limitAction": "limit",
+    "materialPreset": "catalog-2",
+    "materialSource": "SiSiC (Si-infiltrated SiC) | 550-750 °C bulk ρ back-calculated from Zheng et al., AIChE J. 69, e17620 (2022), Table 2; RT branch is a commercial SiC-element proxy | Transcribed catalog values; cited primary data not independently checked here. | ρ(T) table; RT resistivity varies widely between SiSiC grades, so prefer a datasheet; free Si melts at 1414 °C | Reference: 20 °C | ρe table: 20–1350 °C; no extrapolation | k table: 20–1350 °C; no extrapolation | Catalog Jmax 5000000 A/m² is unverified and is not applied to J trip. | Emissivity and protection settings remain user-specified.",
+    "maxTemp": 1350,
+    "meshType": "annular",
+    "mode": "P",
+    "mu": 0.000018,
+    "n": 22,
+    "nr": 12,
+    "nt": 96,
+    "nx": 40,
+    "ny": 40,
+    "nz": 48,
+    "offsetA": 0,
+    "offsetB": 0,
+    "outletPressure": 101325,
+    "parts": [],
+    "period": 1,
+    "pmax": 2000,
+    "porosity": 0,
+    "resistivityBasis": "skeleton",
+    "rho": 0.0008,
+    "rhoCurve": [
+      [
+        20,
+        0.0008
+      ],
+      [
+        300,
+        0.00028000000000000003
+      ],
+      [
+        550,
+        0.000179
+      ],
+      [
+        650,
+        0.000174
+      ],
+      [
+        750,
+        0.000165
+      ],
+      [
+        1000,
+        0.000155
+      ],
+      [
+        1350,
+        0.00015
+      ]
+    ],
+    "shape": "tube",
+    "sink": 25,
+    "slew": 0,
+    "study": "steady",
+    "targetHigh": 500,
+    "targetLow": 100,
+    "thermalR": 0,
+    "triangles": null,
+    "vmax": 150,
+    "wall": false,
+    "wallCp": 730,
+    "wallDensity": 2200,
+    "wallEmissivity": 0.8,
+    "wallGeometry": "axial",
+    "wallHeight": 24,
+    "wallK": 1.4,
+    "wallParts": [],
+    "wallThickness": 3,
+    "wallTriangles": null,
+    "wallWidth": 24,
+    "width": 9.429088644338536
+  },
+  "busy": false,
+  "grid": {
+    "N": 55296,
+    "kind": "annular",
+    "nx": 12,
+    "ny": 96,
+    "nz": 48
+  },
+  "stats": {
+    "I": 31.93346712295915,
+    "P": 100,
+    "R": 0.09806360444185404,
+    "V": 3.131510888402818,
+    "ambient": 99.99999999994384,
+    "avg": 844.0329186162611,
+    "chargeError": 2.9215448695953927e-11,
+    "contactPower": 0,
+    "contacts": 0,
+    "electrodeMax": null,
+    "energyError": 5.614708697976311e-13,
+    "heaterMax": 844.2714450912316,
+    "inputEnergy": null,
+    "integratedError": null,
+    "iterations": 45,
+    "limiter": "Setpoint",
+    "lossEnergy": null,
+    "max": 844.2714450912316,
+    "min": 843.5993199291921,
+    "peakJ": 779472.2985285242,
+    "rate": 0,
+    "requestedVoltage": 3.131510888402818,
+    "seconds": 42.243,
+    "spread": 0.6721251620394924,
+    "steps": 0,
+    "stored": null,
+    "targetFraction": 0,
+    "volume": 0.000001020894316001816
+  }
+}

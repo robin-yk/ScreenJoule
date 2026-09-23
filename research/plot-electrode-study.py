@@ -48,5 +48,5 @@ fig.canvas.draw();dims=[]
 for ax in axs:
  q=ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted());dims.append([q.width,q.height]);assert abs(q.width/q.height-1)<.01
 issues=figcheck(fig);assert not issues,issues
-fig.savefig(O/'figure-5.svg');fig.savefig(O/'figure-5.png',dpi=600);fig.savefig(O/'preview.png',dpi=110)
+fig.savefig(O/'electrode-study.svg');fig.savefig(O/'electrode-study.png',dpi=600);fig.savefig(O/'electrode-study-preview.png',dpi=110)
 (O/'checks.json').write_text(json.dumps({'issues':issues,'axes_inches':dims,'panel_allocation':'5 by 5 in; additional colorbar space','map_points':20,'geometry':'true physical proportions in 3D'}))

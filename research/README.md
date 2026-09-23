@@ -1,16 +1,18 @@
 # Research data
 
-`data/` contains selected 2026-09-07 0D/2D study outputs. Their original model and generator metadata remain in each file. These are archived outputs, not a claim that every study was rerun against this repository. Stopped runs, pulse examples, private manuscripts and obsolete figure versions were excluded.
+Study inputs, retained fields and figure assets accompany the browser application.
 
-`3d-browser-check/` contains the 20-case terminal-width/power study, two Figure 5 fields and a settings file. Settings alone do not define a universal experiment; inspect each result's parameters and metadata. The historical study engine must be matched before calling a new execution an exact reproduction.
+- **Figure 4 — electrode contact and supply limits:** `3d-browser-check/` contains the 20-case width/power sweep and two temperature fields. `plot-electrode-study.py` redraws those arrays with the original study layout.
+- **Figure 5 — SiSiC geometries:** [geometry-sisic/](geometry-sisic/README.md) contains the current figure, four native browser images, and exact input/result records. The original capture automation and complete cell fields were not retained.
+- **Figure S9 — gas-flow comparison:** [gas-openfoam/](gas-openfoam/README.md) contains six matched cases, frozen ScreenJoule sources, an independent OpenFOAM solver, field comparisons and plotting commands.
+- **SiSiC foam (Zheng):** `zheng-duty-check.cjs` reconstructs ten reported operating points using measured power and enthalpy duty. One point sets the heat-loss coefficient; `zheng-duty-check.json` records the remaining nine comparisons.
+- **0D/2D studies:** `data/` retains selected study outputs with their original model and generator metadata.
 
-To redraw Figure 5 from its saved numerical arrays:
+## Electrode-study redraw
 
 ```sh
 python3 -m pip install -r research/requirements.txt
-python3 research/plot-figure5.py
+python3 research/plot-electrode-study.py
 ```
 
-Outputs are written to `research/output/`. This redraw does not rerun a solver. Font substitution can change text layout; the script checks panel proportions and text bounds.
-
-Before freezing a manuscript release, reconcile every main/SI figure with its generator, inputs, historical solver and final Word caption. The complete main/SI regeneration pipeline is not yet consolidated here. Do not label this snapshot a complete publication archive.
+The command writes the retained-data plot to `research/output/`. Numerical reruns require the inputs and solver version recorded for each study. Figure-specific packages describe their available reproduction steps.

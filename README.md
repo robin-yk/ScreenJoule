@@ -1,50 +1,47 @@
 # ScreenJoule
 
-Electrothermal design of reactor elements under power-supply and electrode constraints.
+Electrothermal reactor-element models in 0D, 2D and 3D.
 
-ScreenJoule provides browser workspaces for lumped (0D) screening, axisymmetric (2D) temperature fields, and three-dimensional electrode and geometry studies. Calculations run in JavaScript in the browser. Python is used to assemble the static pages and redraw research figures; it is not a server-side solver.
+[Open ScreenJoule](https://robin-yk.github.io/ScreenJoule/)
+
+ScreenJoule calculates whether a conducting element can reach a target temperature, how quickly it heats, and where temperature and current concentrate. The browser provides three workspaces:
+
+- **0D:** resistance, supply-limited power, lumped temperature, heating time, and equivalent insulation thickness.
+- **2D:** axisymmetric electrical and temperature fields, enclosure heat transfer, and heating/cooling transients.
+- **3D:** shape and electrode studies, temperature-dependent electrical feedback, and optional Stokes gas flow with solid–gas heat transfer.
+
+The application starts with a 3D hollow-tube example. Common cylinder dimensions, scalar properties, porosity, supply settings, and thermal surroundings transfer between compatible workspaces. Electrode settings and temperature-dependent property tables stay local. A 3D-only shape is preserved when visiting another tab.
 
 ## Run locally
 
-Requirements: Python 3 and Node.js 22 or newer for development and testing. The web application itself has no package-install requirement.
+Use Python 3 to build the pages and Node.js 22 or newer to run tests. Application calculations run in browser JavaScript.
 
 ```sh
 python3 build.py
 python3 -m http.server 8000 --directory dist
 ```
 
-Open http://localhost:8000. The initial workspace is 3D. Use the 0D and 2D tabs for the other workspaces. Serve over HTTP because module workers may not run from a `file://` URL.
+Open http://localhost:8000. Serve over HTTP so module workers can run.
 
 ```sh
 npm test
 ```
 
-Tests cover electrical and thermal limits, conservation, selected mesh/time-step checks, screening behavior, and worker/direct execution parity. They do not establish accuracy for arbitrary geometries or experimental reactors.
+Tests cover supply limits, electrical and thermal balances, mesh/time-step checks, insulation, and worker/direct execution parity.
 
-## Repository contents
+## Models and research data
 
-| Path | Contents |
-| --- | --- |
-| `src/` | Application source, 3D engine, interface and worker adapters |
-| `src/suite-upstream/` | Preserved 0D/2D source from Electrification-Suite |
-| `dist/` | Generated static application, ready for HTTP hosting |
-| `test*.js`, `test-unified.mjs`, `tests/` | Executable checks |
-| `validation*.json` | Recorded implementation-check outputs |
-| `research/` | Selected frozen study data and Figure 5 rendering script |
-| `docs/source-manifest.json` | Source commits, copied paths and original SHA-256 hashes |
+The 2D circuit uses mean element temperature to set total power; its local electrical field distributes that power. The 3D solver updates terminal conductance and the supply operating point from the temperature-dependent electrical field. Porous presets use solid fraction and effective properties. Gas flow uses constant-property incompressible Stokes equations.
 
-## Model scope
+- [Thermal surroundings and insulation](docs/common-insulation.md)
+- [Porous-body approximation](docs/porous-3d.md)
+- [Shared cylinder comparison](docs/shared-comparison.md)
+- [Manuscript figures, inputs, and reproduction commands](research/README.md)
 
-0D screens the electrical operating point and lumped heat balance. The 2D core uses a mean-temperature supply closure with spatial electrical and thermal calculations; spatial resistance changes do not fully update the global circuit. The 3D workspace uses its own geometry and boundary definitions. Switching tabs does not make their boundary conditions identical or automatically transfer a common physical case.
+`src/` contains the application and solvers; `dist/` contains the generated site. `research/` contains retained study data and comparison scripts. Match the recorded inputs and solver version when reproducing a study. Hardware safety assessment remains a separate engineering task.
 
-Material presets, contact properties and heat-transfer inputs require assessment for the intended experiment. Literature comparisons retain differences between reported observables and modeled quantities. Some 3D features extend beyond the manuscript's demonstrated cases. Do not use this research software to certify hardware safety, service temperature or lifetime.
+## Source and license
 
-## Research reproducibility status
+The 0D/2D source originated in [Electrification-Suite](https://github.com/robin-yk/Electrification-Suite). Original commits and copied-file hashes are recorded in [the source manifest](docs/source-manifest.json). Later engine changes are recorded in this repository's history.
 
-This is a clean development snapshot, not a frozen manuscript release. `research/README.md` states which data and rendering steps are included and which provenance checks remain. No private manuscript, advisor correspondence, development retrospective or hosting credentials are included.
-
-## Provenance
-
-The 0D/2D code originated in [Electrification-Suite](https://github.com/robin-yk/Electrification-Suite). Its development history remains there. The integrated site source was extracted from commit `d25de092b71f2ef78148962701bde47b9af184ed`; the local suite snapshot was `eb5171b5183519bf2d54c9b0b622f9d06faf765d`. Exact copied-file hashes are recorded in the manifest. Packaging changes preserve the numerical engines.
-
-MIT license. Copyright 2026 Yeonsu Kwak. See `CITATION.cff` for software citation metadata. A manuscript DOI and archival release DOI have not yet been assigned.
+MIT license. Copyright 2026 Yeonsu Kwak. See [CITATION.cff](CITATION.cff) for software citation metadata.
