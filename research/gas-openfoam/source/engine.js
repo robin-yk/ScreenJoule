@@ -4,34 +4,8 @@ function edgeMetric(m,e){return e.length>3?{area:e[3],a:e[4],b:e[5]}:{area:m.are
 function faceMetric(m,f){return f.length>4?{area:f[4],distance:f[5]}:{area:m.area[f[1]],distance:m.d[f[1]]/2};}
 function terminalMetric(m,a){return m.volumes?{area:m.volumes[a]/m.d[2],distance:m.d[2]/2}:{area:m.area[2],distance:m.d[2]/2};}
 function geometryKey(p){return JSON.stringify(['meshType','shape','length','width','height','bore','n','nx','ny','nz','nr','nt','contact','offsetA','offsetB','electrodeLength','flow','channelWidth','channelHeight','wall','wallGeometry','wallThickness','wallWidth','wallHeight','parts','triangles','wallParts','wallTriangles'].map(k=>[k,p[k]??null]));}
-// Solid cylinder on the annular grid: one axis-centred core cell per z layer plus nr-1 rings.
-// The core node represents the core volume mean; for uniform heating the mean-to-rim drop is
-// q r^2/(8k) against a rim flux q r/2, giving an equivalent conduction distance r/4.
-function makeSolidAnnularGrid(p){
- const ro=p.width/2000,L=p.length/1000,nr=p.nr||4,nt=p.nt||48,nz=p.nz||3*p.n;
- if(!(ro>0&&L>0)||![nr,nt,nz].every(Number.isInteger)||nr<2||nt<8||nz<3||nr>64||nt>192||nz>192||nz*(1+(nr-1)*nt)>60000)throw Error('Annular mesh: 2–64 radial, 8–192 angular, 3–192 axial cells; maximum 60,000.');
- const dr=ro/nr,dt=2*Math.PI/nt,dz=L/nz,perLayer=1+(nr-1)*nt,N=nz*perLayer,xyz=[],ijk=[],volumes=[],edges=[],faces=[],termA=[],termB=[],region=[];
- const id=(i,j,k)=>k*perLayer+(i===0?0:1+(i-1)*nt+(j+nt)%nt),coreArea=Math.PI*dr*dr;
- for(let k=0;k<nz;k++){const z=-L/2+(k+.5)*dz,zone=p.electrodeLength>0?(z<-L/2+p.electrodeLength/1000?1:z>L/2-p.electrodeLength/1000?2:0):0;
-  for(let i=0;i<nr;i++)for(let j=0;j<(i===0?1:nt);j++){
-   const a=id(i,j,k),r=i===0?0:(i+.5)*dr,t=(j+.5)*dt,r0=i*dr,r1=r0+dr,A=i===0?coreArea:.5*(r1*r1-r0*r0)*dt;
-   xyz.push([r*Math.cos(t),r*Math.sin(t),z]);ijk.push([i,j,k]);volumes.push(A*dz);region.push(zone);
-   if(i===0){for(let jj=0;jj<nt;jj++){const rb=1.5*dr;edges.push([a,id(1,jj,k),0,dr*dt*dz,dr/4,dr*Math.log(rb/dr)]);}}
-   else{
-    if(i<nr-1){const rf=r1;edges.push([a,id(i+1,j,k),0,rf*dt*dz,rf*Math.log(rf/r),rf*Math.log((r+dr)/rf)]);}
-    const half=dr*dt/(2*Math.log(r1/r0));edges.push([a,id(i,j+1,k),1,dr*dz,half,half]);
-   }
-   if(k<nz-1)edges.push([a,id(i,j,k+1),2,A,dz/2,dz/2]);
-   if(i===nr-1)faces.push([a,0,1,0,ro*dt*dz,ro*Math.log(ro/r)]);
-   for(const sign of [-1,1])if(k===(sign<0?0:nz-1)){const off=(sign<0?p.offsetA:p.offsetB)/100*ro;const terminal=Math.abs(xyz[a][0]-off)<=p.contact/100*ro+1e-12?(sign<0?1:2):0;faces.push([a,2,sign,terminal,A,dz/2]);if(terminal===1)termA.push(a);if(terminal===2)termB.push(a);}
-  }}
- if(!termA.length||!termB.length)throw Error('An electrode covers no annular cells. Increase its width or angular resolution.');
- if(p.electrodeLength>0&&(!region.includes(0)||!region.includes(1)||!region.includes(2)))throw Error('Resolve both electrodes and a heater region along Z.');
- return {kind:'annular',core:true,N,nx:nr,ny:nt,nz,nr,nt,ri:0,ro,dr,dt,W:2*ro,H:2*ro,L,d:[dr,dt,dz],xyz,ijk,volumes:Float64Array.from(volumes),region:Int8Array.from(region),edges,faces,termA,termB};
-}
 function makeAnnularGrid(p){
- if((p.shape==='rod'||(p.shape==='tube'&&p.bore===0))&&!p.flow&&!p.wall)return makeSolidAnnularGrid(p);
- if(p.shape!=='tube'||p.flow||p.wall)throw Error('Annular grid supports solid cylinders and hollow tubes with gas and wall disabled. Select Cartesian for coupled gas/wall calculations.');
+ if(p.shape!=='tube'||p.flow||p.wall)throw Error('Annular grid supports a hollow solid tube with gas and wall disabled. Select Cartesian for coupled gas/wall calculations.');
  const ri=p.bore/2000,ro=p.width/2000,L=p.length/1000,nr=p.nr||4,nt=p.nt||48,nz=p.nz||3*p.n;
  if(!(ri>0&&ro>ri&&L>0)||![nr,nt,nz].every(Number.isInteger)||nr<2||nt<8||nz<3||nr>64||nt>192||nz>192||nr*nt*nz>60000)throw Error('Annular mesh: 2–64 radial, 8–192 angular, 3–192 axial cells; maximum 60,000. Bore must be positive.');
  const dr=(ro-ri)/nr,dt=2*Math.PI/nt,dz=L/nz,N=nr*nt*nz,xyz=[],ijk=[],volumes=[],edges=[],faces=[],termA=[],termB=[],region=[];
@@ -50,8 +24,7 @@ function makeAnnularGrid(p){
  if(p.electrodeLength>0&&(!region.includes(0)||!region.includes(1)||!region.includes(2)))throw Error('Resolve both electrodes and a heater region along Z.');
  return {kind:'annular',N,nx:nr,ny:nt,nz,nr,nt,ri,ro,dr,dt,W:2*ro,H:2*ro,L,d:[dr,dt,dz],xyz,ijk,volumes:Float64Array.from(volumes),region:Int8Array.from(region),edges,faces,termA,termB};
 }
-function annularFacePolygon(m,a,axis,sign){if(m.core&&m.ijk[a][0]===0){const z=-m.L/2+m.ijk[a][2]*m.d[2]+(sign<0?0:m.d[2]);if(axis!==2)return {points:[[0,0,z],[0,0,z],[0,0,z]],normal:[0,0,0],center:[0,0,z]};const points=Array.from({length:m.nt},(_,n)=>{const t=(sign<0?m.nt-n:n)*m.dt;return [m.dr*Math.cos(t),m.dr*Math.sin(t),z];});return {points,normal:[0,0,sign],center:[0,0,z]};}
- const [i,j,k]=m.ijk[a],r0=m.ri+i*m.dr,r1=r0+m.dr,t0=j*m.dt,t1=t0+m.dt,z0=-m.L/2+k*m.d[2],z1=z0+m.d[2];const point=(r,t,z)=>[r*Math.cos(t),r*Math.sin(t),z];let points,normal;
+function annularFacePolygon(m,a,axis,sign){const [i,j,k]=m.ijk[a],r0=m.ri+i*m.dr,r1=r0+m.dr,t0=j*m.dt,t1=t0+m.dt,z0=-m.L/2+k*m.d[2],z1=z0+m.d[2];const point=(r,t,z)=>[r*Math.cos(t),r*Math.sin(t),z];let points,normal;
  if(axis===0){const r=sign<0?r0:r1,t=(t0+t1)/2;points=[point(r,t0,z0),point(r,t1,z0),point(r,t1,z1),point(r,t0,z1)];normal=[sign*Math.cos(t),sign*Math.sin(t),0];}
  else if(axis===1){const t=sign<0?t0:t1;points=[point(r0,t,z0),point(r1,t,z0),point(r1,t,z1),point(r0,t,z1)];normal=[-sign*Math.sin(t),sign*Math.cos(t),0];}
  else{const z=sign<0?z0:z1;points=[point(r0,t0,z),point(r1,t0,z),point(r1,t1,z),point(r0,t1,z)];normal=[0,0,sign];}
@@ -268,7 +241,7 @@ function solveModel(p,progress=()=>{}){
     }
     return {diag,rhs,ambient,contacts};
   }
-  let lastE,lastB,lastRate=0,lastError=0,iterations=0,previousVoltage=0,activeDt=0,lastPreview=-Infinity;
+  let lastE,lastB,lastRate=0,lastError=0,iterations=0,previousVoltage=0,activeDt=0;
   function advance(old,dt,on,time){
     activeDt=dt;let guess=Float64Array.from(old),converged=false;
     for(let it=0;it<140;it++){
@@ -279,13 +252,7 @@ function solveModel(p,progress=()=>{}){
       // Damped, bounded Picard step avoids cold-start radiation overshoot.
       // Test convergence with the full fixed-point residual, never the bounded step.
       for(let i=0;i<N;i++){delta=Math.max(delta,Math.abs(next[i]-guess[i]));guess[i]+=Math.max(-100,Math.min(100,.3*(next[i]-guess[i])));if(!Number.isFinite(guess[i])||guess[i]>p.maxTemp+273.15||guess[i]<=0)throw Error('Temperature left the specified calculation range. Reduce the input or adjust the model.');}
-      iterations++;
-      const now=Date.now(),sendField=p.livePreview&&now-lastPreview>=150;
-      if(it%5===0||sendField){
-        const update={time,iteration:it+1,delta,cells:N};
-        if(sendField){update.temperature=Float64Array.from(guess.subarray(0,Ns),t=>t-273.15);lastPreview=now;}
-        progress(update);
-      }
+      iterations++;if(it%5===0)progress({time,iteration:it+1,delta,cells:N});
       if(delta<2e-6){converged=true;break;}
     }
     if(!converged)throw Error('Electrothermal iteration did not converge. A steady solution has not been established.');

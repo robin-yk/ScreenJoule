@@ -1,0 +1,720 @@
+{
+  "source": "https://robin-yk.github.io/ScreenJoule/dist/joule3d.html",
+  "execution": "Native browser worker via loadParameters/run. No solver changes.",
+  "material": "App SiSiC catalog-2 preset with tabulated resistivity and conductivity; emissivity specified independently as 0.8.",
+  "supply": {
+    "vmax": 150,
+    "imax": 40,
+    "pmax": 2000,
+    "command": 100
+  },
+  "geometry": "Each original shape elongated by 15%; transverse dimensions divided by sqrt(1.15), preserving volume. Porosity zero.",
+  "display": "Native browser canvas; yaw .85, pitch .32, zoom 1.3; common 500–1200 °C. Tube native Y half-cutaway for display only. Statistics cover full bodies.",
+  "rows": [
+    {
+      "i": 0,
+      "name": "Hollow tube",
+      "parameters": {
+        "alpha": 0,
+        "ambient": 25,
+        "bore": 6.061556985646202,
+        "channelHeight": 24,
+        "channelWidth": 24,
+        "command": 100,
+        "contact": 100,
+        "contactR": 0,
+        "cp": 680,
+        "cpCurve": [],
+        "density": 3050,
+        "dt": 0.25,
+        "duration": 2,
+        "duty": 0.5,
+        "electrodeCp": 385,
+        "electrodeCpCurve": [],
+        "electrodeDensity": 8960,
+        "electrodeK": 400,
+        "electrodeKCurve": [],
+        "electrodeLength": 0,
+        "electrodeRho": 1.7e-8,
+        "electrodeRhoCurve": [],
+        "emissivity": 0.8,
+        "flow": false,
+        "flowRate": 5,
+        "flowUnit": "actual",
+        "gasCp": 1005,
+        "gasDensity": 1.2,
+        "gasInlet": 25,
+        "gasK": 0.026,
+        "h": 15,
+        "hc": 0,
+        "height": 9.429088644338536,
+        "imax": 40,
+        "initial": 25,
+        "initialMode": "uniform",
+        "initialState": null,
+        "insulationK": 0.04,
+        "insulationThickness": 0,
+        "jlimit": 5000000,
+        "k": 140,
+        "kCurve": [
+          [
+            20,
+            140
+          ],
+          [
+            600,
+            60
+          ],
+          [
+            1000,
+            45
+          ],
+          [
+            1350,
+            40
+          ]
+        ],
+        "length": 24.91780014392056,
+        "limitAction": "limit",
+        "materialPreset": "catalog-2",
+        "materialSource": "SiSiC (Si-infiltrated SiC) | 550-750 °C bulk ρ back-calculated from Zheng et al., AIChE J. 69, e17620 (2022), Table 2; RT branch is a commercial SiC-element proxy | Transcribed catalog values; cited primary data not independently checked here. | ρ(T) table; RT resistivity varies widely between SiSiC grades, so prefer a datasheet; free Si melts at 1414 °C | Reference: 20 °C | ρe table: 20–1350 °C; no extrapolation | k table: 20–1350 °C; no extrapolation | Catalog Jmax 5000000 A/m² is unverified and is not applied to J trip. | Emissivity and protection settings remain user-specified.",
+        "maxTemp": 1350,
+        "meshType": "annular",
+        "mode": "P",
+        "mu": 0.000018,
+        "n": 22,
+        "nr": 12,
+        "nt": 96,
+        "nx": 40,
+        "ny": 40,
+        "nz": 48,
+        "offsetA": 0,
+        "offsetB": 0,
+        "outletPressure": 101325,
+        "parts": [],
+        "period": 1,
+        "pmax": 2000,
+        "porosity": 0,
+        "resistivityBasis": "skeleton",
+        "rho": 0.0008,
+        "rhoCurve": [
+          [
+            20,
+            0.0008
+          ],
+          [
+            300,
+            0.00028000000000000003
+          ],
+          [
+            550,
+            0.000179
+          ],
+          [
+            650,
+            0.000174
+          ],
+          [
+            750,
+            0.000165
+          ],
+          [
+            1000,
+            0.000155
+          ],
+          [
+            1350,
+            0.00015
+          ]
+        ],
+        "shape": "tube",
+        "sink": 25,
+        "slew": 0,
+        "study": "steady",
+        "targetHigh": 500,
+        "targetLow": 100,
+        "thermalR": 0,
+        "triangles": null,
+        "vmax": 150,
+        "wall": false,
+        "wallCp": 730,
+        "wallDensity": 2200,
+        "wallEmissivity": 0.8,
+        "wallGeometry": "axial",
+        "wallHeight": 24,
+        "wallK": 1.4,
+        "wallParts": [],
+        "wallThickness": 3,
+        "wallTriangles": null,
+        "wallWidth": 24,
+        "width": 9.429088644338536
+      },
+      "busy": false,
+      "grid": {
+        "N": 55296,
+        "kind": "annular",
+        "nx": 12,
+        "ny": 96,
+        "nz": 48
+      },
+      "stats": {
+        "I": 31.93346712295915,
+        "P": 100,
+        "R": 0.09806360444185404,
+        "V": 3.131510888402818,
+        "ambient": 99.99999999994384,
+        "avg": 844.0329186162611,
+        "chargeError": 2.9215448695953927e-11,
+        "contactPower": 0,
+        "contacts": 0,
+        "electrodeMax": null,
+        "energyError": 5.614708697976311e-13,
+        "heaterMax": 844.2714450912316,
+        "inputEnergy": null,
+        "integratedError": null,
+        "iterations": 45,
+        "limiter": "Setpoint",
+        "lossEnergy": null,
+        "max": 844.2714450912316,
+        "min": 843.5993199291921,
+        "peakJ": 779472.2985285242,
+        "rate": 0,
+        "requestedVoltage": 3.131510888402818,
+        "seconds": 42.243,
+        "spread": 0.6721251620394924,
+        "steps": 0,
+        "stored": null,
+        "targetFraction": 0,
+        "volume": 0.000001020894316001816
+      }
+    },
+    {
+      "i": 1,
+      "name": "Thin bar",
+      "parameters": {
+        "alpha": 0,
+        "ambient": 25,
+        "bore": 0,
+        "channelHeight": 24,
+        "channelWidth": 24,
+        "command": 100,
+        "contact": 100,
+        "contactR": 0,
+        "cp": 680,
+        "cpCurve": [],
+        "density": 3050,
+        "dt": 0.25,
+        "duration": 2,
+        "duty": 0.5,
+        "electrodeCp": 385,
+        "electrodeCpCurve": [],
+        "electrodeDensity": 8960,
+        "electrodeK": 400,
+        "electrodeKCurve": [],
+        "electrodeLength": 0,
+        "electrodeRho": 1.7e-8,
+        "electrodeRhoCurve": [],
+        "emissivity": 0.8,
+        "flow": false,
+        "flowRate": 5,
+        "flowUnit": "actual",
+        "gasCp": 1005,
+        "gasDensity": 1.2,
+        "gasInlet": 25,
+        "gasK": 0.026,
+        "h": 15,
+        "hc": 0,
+        "height": 2.381957434356313,
+        "imax": 40,
+        "initial": 25,
+        "initialMode": "uniform",
+        "initialState": null,
+        "insulationK": 0.04,
+        "insulationThickness": 0,
+        "jlimit": 5000000,
+        "k": 140,
+        "kCurve": [
+          [
+            20,
+            140
+          ],
+          [
+            600,
+            60
+          ],
+          [
+            1000,
+            45
+          ],
+          [
+            1350,
+            40
+          ]
+        ],
+        "length": 29.375194908419537,
+        "limitAction": "limit",
+        "materialPreset": "catalog-2",
+        "materialSource": "SiSiC (Si-infiltrated SiC) | 550-750 °C bulk ρ back-calculated from Zheng et al., AIChE J. 69, e17620 (2022), Table 2; RT branch is a commercial SiC-element proxy | Transcribed catalog values; cited primary data not independently checked here. | ρ(T) table; RT resistivity varies widely between SiSiC grades, so prefer a datasheet; free Si melts at 1414 °C | Reference: 20 °C | ρe table: 20–1350 °C; no extrapolation | k table: 20–1350 °C; no extrapolation | Catalog Jmax 5000000 A/m² is unverified and is not applied to J trip. | Emissivity and protection settings remain user-specified.",
+        "maxTemp": 1350,
+        "meshType": "cartesian",
+        "mode": "P",
+        "mu": 0.000018,
+        "n": 22,
+        "nr": 12,
+        "nt": 96,
+        "nx": 40,
+        "ny": 16,
+        "nz": 90,
+        "offsetA": 0,
+        "offsetB": 0,
+        "outletPressure": 101325,
+        "parts": [],
+        "period": 1,
+        "pmax": 2000,
+        "porosity": 0,
+        "resistivityBasis": "skeleton",
+        "rho": 0.0008,
+        "rhoCurve": [
+          [
+            20,
+            0.0008
+          ],
+          [
+            300,
+            0.00028000000000000003
+          ],
+          [
+            550,
+            0.000179
+          ],
+          [
+            650,
+            0.000174
+          ],
+          [
+            750,
+            0.000165
+          ],
+          [
+            1000,
+            0.000155
+          ],
+          [
+            1350,
+            0.00015
+          ]
+        ],
+        "shape": "block",
+        "sink": 25,
+        "slew": 0,
+        "study": "steady",
+        "targetHigh": 500,
+        "targetLow": 100,
+        "thermalR": 0,
+        "triangles": null,
+        "vmax": 150,
+        "wall": false,
+        "wallCp": 730,
+        "wallDensity": 2200,
+        "wallEmissivity": 0.8,
+        "wallGeometry": "axial",
+        "wallHeight": 24,
+        "wallK": 1.4,
+        "wallParts": [],
+        "wallThickness": 3,
+        "wallTriangles": null,
+        "wallWidth": 24,
+        "width": 14.291744606137875
+      },
+      "busy": false,
+      "grid": {
+        "N": 57600,
+        "nx": 40,
+        "ny": 16,
+        "nz": 90
+      },
+      "stats": {
+        "I": 27.039163255601768,
+        "P": 100,
+        "R": 0.13677713548569942,
+        "V": 3.698339296031388,
+        "ambient": 100.00000000018804,
+        "avg": 912.291439589952,
+        "chargeError": 8.76824240587777e-12,
+        "contactPower": 0,
+        "contacts": 0,
+        "electrodeMax": null,
+        "energyError": 1.880380295911993e-12,
+        "heaterMax": 915.1224727796952,
+        "inputEnergy": null,
+        "integratedError": null,
+        "iterations": 50,
+        "limiter": "Setpoint",
+        "lossEnergy": null,
+        "max": 915.1224727796952,
+        "min": 907.0877107732628,
+        "peakJ": 794848.3018939306,
+        "rate": 0,
+        "requestedVoltage": 3.698339296031388,
+        "seconds": 80.419,
+        "spread": 8.034762006432402,
+        "steps": 0,
+        "stored": null,
+        "targetFraction": 0,
+        "volume": 9.999999999998718e-7
+      }
+    },
+    {
+      "i": 2,
+      "name": "Narrow-center bar",
+      "parameters": {
+        "alpha": 0,
+        "ambient": 25,
+        "bore": 0,
+        "channelHeight": 24,
+        "channelWidth": 24,
+        "command": 100,
+        "contact": 100,
+        "contactR": 0,
+        "cp": 680,
+        "cpCurve": [],
+        "density": 3050,
+        "dt": 0.25,
+        "duration": 2,
+        "duty": 0.5,
+        "electrodeCp": 385,
+        "electrodeCpCurve": [],
+        "electrodeDensity": 8960,
+        "electrodeK": 400,
+        "electrodeKCurve": [],
+        "electrodeLength": 0,
+        "electrodeRho": 1.7e-8,
+        "electrodeRhoCurve": [],
+        "emissivity": 0.8,
+        "flow": false,
+        "flowRate": 5,
+        "flowUnit": "actual",
+        "gasCp": 1005,
+        "gasDensity": 1.2,
+        "gasInlet": 25,
+        "gasK": 0.026,
+        "h": 15,
+        "hc": 0,
+        "height": 4.7291405277485286,
+        "imax": 40,
+        "initial": 25,
+        "initialMode": "uniform",
+        "initialState": null,
+        "insulationK": 0.04,
+        "insulationThickness": 0,
+        "jlimit": 5000000,
+        "k": 140,
+        "kCurve": [
+          [
+            20,
+            140
+          ],
+          [
+            600,
+            60
+          ],
+          [
+            1000,
+            45
+          ],
+          [
+            1350,
+            40
+          ]
+        ],
+        "length": 29.160769782911725,
+        "limitAction": "limit",
+        "materialPreset": "catalog-2",
+        "materialSource": "SiSiC (Si-infiltrated SiC) | 550-750 °C bulk ρ back-calculated from Zheng et al., AIChE J. 69, e17620 (2022), Table 2; RT branch is a commercial SiC-element proxy | Transcribed catalog values; cited primary data not independently checked here. | ρ(T) table; RT resistivity varies widely between SiSiC grades, so prefer a datasheet; free Si melts at 1414 °C | Reference: 20 °C | ρe table: 20–1350 °C; no extrapolation | k table: 20–1350 °C; no extrapolation | Catalog Jmax 5000000 A/m² is unverified and is not applied to J trip. | Emissivity and protection settings remain user-specified.",
+        "maxTemp": 1350,
+        "meshType": "cartesian",
+        "mode": "P",
+        "mu": 0.000018,
+        "n": 22,
+        "nr": 12,
+        "nt": 96,
+        "nx": 40,
+        "ny": 16,
+        "nz": 90,
+        "offsetA": 0,
+        "offsetB": 0,
+        "outletPressure": 101325,
+        "parts": [],
+        "period": 1,
+        "pmax": 2000,
+        "porosity": 0,
+        "resistivityBasis": "skeleton",
+        "rho": 0.0008,
+        "rhoCurve": [
+          [
+            20,
+            0.0008
+          ],
+          [
+            300,
+            0.00028000000000000003
+          ],
+          [
+            550,
+            0.000179
+          ],
+          [
+            650,
+            0.000174
+          ],
+          [
+            750,
+            0.000165
+          ],
+          [
+            1000,
+            0.000155
+          ],
+          [
+            1350,
+            0.00015
+          ]
+        ],
+        "shape": "neck",
+        "sink": 25,
+        "slew": 0,
+        "study": "steady",
+        "targetHigh": 500,
+        "targetLow": 100,
+        "thermalR": 0,
+        "triangles": null,
+        "vmax": 150,
+        "wall": false,
+        "wallCp": 730,
+        "wallDensity": 2200,
+        "wallEmissivity": 0.8,
+        "wallGeometry": "axial",
+        "wallHeight": 24,
+        "wallK": 1.4,
+        "wallParts": [],
+        "wallThickness": 3,
+        "wallTriangles": null,
+        "wallWidth": 24,
+        "width": 9.45828105549706
+      },
+      "busy": false,
+      "grid": {
+        "N": 44160,
+        "nx": 40,
+        "ny": 16,
+        "nz": 90
+      },
+      "stats": {
+        "I": 25.272665978339656,
+        "P": 100,
+        "R": 0.15656615461022874,
+        "V": 3.9568441289773943,
+        "ambient": 100.00000179742662,
+        "avg": 1003.2133749029156,
+        "chargeError": 3.1296407412660676e-11,
+        "contactPower": 0,
+        "contacts": 0,
+        "electrodeMax": null,
+        "energyError": 1.7974265876797395e-8,
+        "heaterMax": 1052.1326771776571,
+        "inputEnergy": null,
+        "integratedError": null,
+        "iterations": 55,
+        "limiter": "Setpoint",
+        "lossEnergy": null,
+        "max": 1052.1326771776571,
+        "min": 975.5614056976118,
+        "peakJ": 1605310.5638460654,
+        "rate": 0,
+        "requestedVoltage": 3.9568441289773943,
+        "seconds": 62.735,
+        "spread": 76.57127148004543,
+        "steps": 0,
+        "stored": null,
+        "targetFraction": 0,
+        "volume": 9.999999999992154e-7
+      }
+    },
+    {
+      "i": 3,
+      "name": "Solid cylinder",
+      "parameters": {
+        "alpha": 0,
+        "ambient": 25,
+        "bore": 0,
+        "channelHeight": 24,
+        "channelWidth": 24,
+        "command": 100,
+        "contact": 100,
+        "contactR": 0,
+        "cp": 680,
+        "cpCurve": [],
+        "density": 3050,
+        "dt": 0.25,
+        "duration": 2,
+        "duty": 0.5,
+        "electrodeCp": 385,
+        "electrodeCpCurve": [],
+        "electrodeDensity": 8960,
+        "electrodeK": 400,
+        "electrodeKCurve": [],
+        "electrodeLength": 0,
+        "electrodeRho": 1.7e-8,
+        "electrodeRhoCurve": [],
+        "emissivity": 0.8,
+        "flow": false,
+        "flowRate": 5,
+        "flowUnit": "actual",
+        "gasCp": 1005,
+        "gasDensity": 1.2,
+        "gasInlet": 25,
+        "gasK": 0.026,
+        "h": 15,
+        "hc": 0,
+        "height": 7.471123234775763,
+        "imax": 40,
+        "initial": 25,
+        "initialMode": "uniform",
+        "initialState": null,
+        "insulationK": 0.04,
+        "insulationThickness": 0,
+        "jlimit": 5000000,
+        "k": 140,
+        "kCurve": [
+          [
+            20,
+            140
+          ],
+          [
+            600,
+            60
+          ],
+          [
+            1000,
+            45
+          ],
+          [
+            1350,
+            40
+          ]
+        ],
+        "length": 23.034175384589425,
+        "limitAction": "limit",
+        "materialPreset": "catalog-2",
+        "materialSource": "SiSiC (Si-infiltrated SiC) | 550-750 °C bulk ρ back-calculated from Zheng et al., AIChE J. 69, e17620 (2022), Table 2; RT branch is a commercial SiC-element proxy | Transcribed catalog values; cited primary data not independently checked here. | ρ(T) table; RT resistivity varies widely between SiSiC grades, so prefer a datasheet; free Si melts at 1414 °C | Reference: 20 °C | ρe table: 20–1350 °C; no extrapolation | k table: 20–1350 °C; no extrapolation | Catalog Jmax 5000000 A/m² is unverified and is not applied to J trip. | Emissivity and protection settings remain user-specified.",
+        "maxTemp": 1350,
+        "meshType": "cartesian",
+        "mode": "P",
+        "mu": 0.000018,
+        "n": 22,
+        "nr": 12,
+        "nt": 96,
+        "nx": 40,
+        "ny": 40,
+        "nz": 36,
+        "offsetA": 0,
+        "offsetB": 0,
+        "outletPressure": 101325,
+        "parts": [],
+        "period": 1,
+        "pmax": 2000,
+        "porosity": 0,
+        "resistivityBasis": "skeleton",
+        "rho": 0.0008,
+        "rhoCurve": [
+          [
+            20,
+            0.0008
+          ],
+          [
+            300,
+            0.00028000000000000003
+          ],
+          [
+            550,
+            0.000179
+          ],
+          [
+            650,
+            0.000174
+          ],
+          [
+            750,
+            0.000165
+          ],
+          [
+            1000,
+            0.000155
+          ],
+          [
+            1350,
+            0.00015
+          ]
+        ],
+        "shape": "rod",
+        "sink": 25,
+        "slew": 0,
+        "study": "steady",
+        "targetHigh": 500,
+        "targetLow": 100,
+        "thermalR": 0,
+        "triangles": null,
+        "vmax": 150,
+        "wall": false,
+        "wallCp": 730,
+        "wallDensity": 2200,
+        "wallEmissivity": 0.8,
+        "wallGeometry": "axial",
+        "wallHeight": 24,
+        "wallK": 1.4,
+        "wallParts": [],
+        "wallThickness": 3,
+        "wallTriangles": null,
+        "wallWidth": 24,
+        "width": 7.471123234775763
+      },
+      "busy": false,
+      "grid": {
+        "N": 45504,
+        "nx": 40,
+        "ny": 40,
+        "nz": 36
+      },
+      "stats": {
+        "I": 35.197733224659736,
+        "P": 100,
+        "R": 0.0807180402969576,
+        "V": 2.841092048789648,
+        "ambient": 99.99999999972816,
+        "avg": 1033.2973707651531,
+        "chargeError": 1.4899351347255983e-10,
+        "contactPower": 0,
+        "contacts": 0,
+        "electrodeMax": null,
+        "energyError": 2.7182522899238393e-12,
+        "heaterMax": 1037.1723894038337,
+        "inputEnergy": null,
+        "integratedError": null,
+        "iterations": 53,
+        "limiter": "Setpoint",
+        "lossEnergy": null,
+        "max": 1037.1723894038337,
+        "min": 1029.1860517381597,
+        "peakJ": 798493.521213671,
+        "rate": 0,
+        "requestedVoltage": 2.841092048789648,
+        "seconds": 53.822,
+        "spread": 7.986337665674,
+        "steps": 0,
+        "stored": null,
+        "targetFraction": 0,
+        "volume": 0.0000010157142857141404
+      }
+    }
+  ]
+}

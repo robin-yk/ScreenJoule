@@ -1,0 +1,176 @@
+{
+  "i": 3,
+  "name": "Solid cylinder",
+  "parameters": {
+    "alpha": 0,
+    "ambient": 25,
+    "bore": 0,
+    "channelHeight": 24,
+    "channelWidth": 24,
+    "command": 100,
+    "contact": 100,
+    "contactR": 0,
+    "cp": 680,
+    "cpCurve": [],
+    "density": 3050,
+    "dt": 0.25,
+    "duration": 2,
+    "duty": 0.5,
+    "electrodeCp": 385,
+    "electrodeCpCurve": [],
+    "electrodeDensity": 8960,
+    "electrodeK": 400,
+    "electrodeKCurve": [],
+    "electrodeLength": 0,
+    "electrodeRho": 1.7e-8,
+    "electrodeRhoCurve": [],
+    "emissivity": 0.8,
+    "flow": false,
+    "flowRate": 5,
+    "flowUnit": "actual",
+    "gasCp": 1005,
+    "gasDensity": 1.2,
+    "gasInlet": 25,
+    "gasK": 0.026,
+    "h": 15,
+    "hc": 0,
+    "height": 7.471123234775763,
+    "imax": 40,
+    "initial": 25,
+    "initialMode": "uniform",
+    "initialState": null,
+    "insulationK": 0.04,
+    "insulationThickness": 0,
+    "jlimit": 5000000,
+    "k": 140,
+    "kCurve": [
+      [
+        20,
+        140
+      ],
+      [
+        600,
+        60
+      ],
+      [
+        1000,
+        45
+      ],
+      [
+        1350,
+        40
+      ]
+    ],
+    "length": 23.034175384589425,
+    "limitAction": "limit",
+    "materialPreset": "catalog-2",
+    "materialSource": "SiSiC (Si-infiltrated SiC) | 550-750 °C bulk ρ back-calculated from Zheng et al., AIChE J. 69, e17620 (2022), Table 2; RT branch is a commercial SiC-element proxy | Transcribed catalog values; cited primary data not independently checked here. | ρ(T) table; RT resistivity varies widely between SiSiC grades, so prefer a datasheet; free Si melts at 1414 °C | Reference: 20 °C | ρe table: 20–1350 °C; no extrapolation | k table: 20–1350 °C; no extrapolation | Catalog Jmax 5000000 A/m² is unverified and is not applied to J trip. | Emissivity and protection settings remain user-specified.",
+    "maxTemp": 1350,
+    "meshType": "cartesian",
+    "mode": "P",
+    "mu": 0.000018,
+    "n": 22,
+    "nr": 12,
+    "nt": 96,
+    "nx": 40,
+    "ny": 40,
+    "nz": 36,
+    "offsetA": 0,
+    "offsetB": 0,
+    "outletPressure": 101325,
+    "parts": [],
+    "period": 1,
+    "pmax": 2000,
+    "porosity": 0,
+    "resistivityBasis": "skeleton",
+    "rho": 0.0008,
+    "rhoCurve": [
+      [
+        20,
+        0.0008
+      ],
+      [
+        300,
+        0.00028000000000000003
+      ],
+      [
+        550,
+        0.000179
+      ],
+      [
+        650,
+        0.000174
+      ],
+      [
+        750,
+        0.000165
+      ],
+      [
+        1000,
+        0.000155
+      ],
+      [
+        1350,
+        0.00015
+      ]
+    ],
+    "shape": "rod",
+    "sink": 25,
+    "slew": 0,
+    "study": "steady",
+    "targetHigh": 500,
+    "targetLow": 100,
+    "thermalR": 0,
+    "triangles": null,
+    "vmax": 150,
+    "wall": false,
+    "wallCp": 730,
+    "wallDensity": 2200,
+    "wallEmissivity": 0.8,
+    "wallGeometry": "axial",
+    "wallHeight": 24,
+    "wallK": 1.4,
+    "wallParts": [],
+    "wallThickness": 3,
+    "wallTriangles": null,
+    "wallWidth": 24,
+    "width": 7.471123234775763
+  },
+  "busy": false,
+  "grid": {
+    "N": 45504,
+    "nx": 40,
+    "ny": 40,
+    "nz": 36
+  },
+  "stats": {
+    "I": 35.197733224659736,
+    "P": 100,
+    "R": 0.0807180402969576,
+    "V": 2.841092048789648,
+    "ambient": 99.99999999972816,
+    "avg": 1033.2973707651531,
+    "chargeError": 1.4899351347255983e-10,
+    "contactPower": 0,
+    "contacts": 0,
+    "electrodeMax": null,
+    "energyError": 2.7182522899238393e-12,
+    "heaterMax": 1037.1723894038337,
+    "inputEnergy": null,
+    "integratedError": null,
+    "iterations": 53,
+    "limiter": "Setpoint",
+    "lossEnergy": null,
+    "max": 1037.1723894038337,
+    "min": 1029.1860517381597,
+    "peakJ": 798493.521213671,
+    "rate": 0,
+    "requestedVoltage": 2.841092048789648,
+    "seconds": 53.822,
+    "spread": 7.986337665674,
+    "steps": 0,
+    "stored": null,
+    "targetFraction": 0,
+    "volume": 0.0000010157142857141404
+  }
+}

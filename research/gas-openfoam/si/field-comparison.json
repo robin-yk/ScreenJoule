@@ -1,0 +1,50 @@
+[
+  {
+    "level": 1,
+    "flowRate": 1,
+    "max_solid_T_error_K": 1.2566096643240598e-06,
+    "max_gas_T_error_K": 1.0462977684255748e-06,
+    "max_uz_error_m_s": 8.221694809337765e-15,
+    "max_pressure_error_Pa": 2.303929616531697e-18
+  },
+  {
+    "level": 1,
+    "flowRate": 10,
+    "max_solid_T_error_K": 1.2553796864267497e-06,
+    "max_gas_T_error_K": 1.0452915262249007e-06,
+    "max_uz_error_m_s": 8.221721914392077e-14,
+    "max_pressure_error_Pa": 2.3201926491189795e-17
+  },
+  {
+    "level": 1,
+    "flowRate": 100,
+    "max_solid_T_error_K": 1.247554962446884e-06,
+    "max_gas_T_error_K": 1.038743846493162e-06,
+    "max_uz_error_m_s": 8.221721914392077e-13,
+    "max_pressure_error_Pa": 2.3245294578089215e-16
+  },
+  {
+    "level": 2,
+    "flowRate": 1,
+    "max_solid_T_error_K": 1.2315436492826848e-06,
+    "max_gas_T_error_K": 1.0256146651954623e-06,
+    "max_uz_error_m_s": 1.5598470865657577e-14,
+    "max_pressure_error_Pa": 3.415236843329339e-18
+  },
+  {
+    "level": 2,
+    "flowRate": 10,
+    "max_solid_T_error_K": 1.2299126410653116e-06,
+    "max_gas_T_error_K": 1.0242612233923865e-06,
+    "max_uz_error_m_s": 1.5598460023635852e-13,
+    "max_pressure_error_Pa": 3.447762908503904e-17
+  },
+  {
+    "level": 2,
+    "flowRate": 100,
+    "max_solid_T_error_K": 1.2217146831972059e-06,
+    "max_gas_T_error_K": 1.0173764621868031e-06,
+    "max_uz_error_m_s": 1.5598425329166332e-12,
+    "max_pressure_error_Pa": 3.452099717193846e-16
+  }
+]

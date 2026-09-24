@@ -1,0 +1,26 @@
+{
+  "cases": 6,
+  "maximum_relative_energy_residual": 2.5713590257048228e-08,
+  "maximum_relative_mass_residual": 0,
+  "refinement": "X and Z doubled; Y retained at 9 cells",
+  "mesh_changes": [
+    {
+      "flow": 1,
+      "solid_mean_K": -0.9895379539514124,
+      "gas_outlet_K": 0.44960526550829627,
+      "pressure_relative": 0.09357083638372465
+    },
+    {
+      "flow": 10,
+      "solid_mean_K": -0.987180716501598,
+      "gas_outlet_K": 0.4482435209979485,
+      "pressure_relative": 0.09357083638372465
+    },
+    {
+      "flow": 100,
+      "solid_mean_K": -0.9716538713736895,
+      "gas_outlet_K": 0.4425393421254853,
+      "pressure_relative": 0.09357083638372465
+    }
+  ]
+}

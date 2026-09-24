@@ -1,0 +1,20 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const ctx=vm.createContext({});
+for(const f of ['engine.js','electrode-overlay.js'])vm.runInContext(readFileSync(new URL('../src/'+f,import.meta.url),'utf8'),ctx);
+const p={shape:'tube',nr:3,nt:48,nz:18,length:30,width:12,bore:8,n:10,contact:100,offsetA:0,offsetB:0};
+for(const meshType of ['annular','cartesian'])test(meshType+' contact display follows solver faces and leaves mesh unchanged',()=>{
+ const full=ctx.makeGrid({...p,meshType}),before=JSON.stringify(full);
+ const a=ctx.electrodeContactGeometry(full,1),b=ctx.electrodeContactGeometry(full,2);
+ assert.equal(a.polygons.length,full.termA.length);
+ assert(Math.abs(a.area-b.area)<1e-12);
+ assert(Math.hypot(...a.anchor.slice(0,2))>=p.bore/2000);
+ assert.equal(JSON.stringify(full),before);
+ if(meshType==='annular')assert(Math.abs(a.area-Math.PI*(.006**2-.004**2))<1e-12);
+ const partial=ctx.makeGrid({...p,meshType,contact:25,offsetA:-50,offsetB:50});
+ const pa=ctx.electrodeContactGeometry(partial,1),pb=ctx.electrodeContactGeometry(partial,2);
+ assert(pa.area<a.area);assert(pa.anchor[0]<0);assert(pb.anchor[0]>0);
+ assert(pa.polygons.every(f=>partial.termA.includes(f.a)));
+});

@@ -1,0 +1,29 @@
+{
+  "style": "Nature 5in",
+  "panel_allocation_in": [
+    5,
+    5
+  ],
+  "panel_shape": [
+    1,
+    1
+  ],
+  "canvas_in": [
+    5.0,
+    5.0
+  ],
+  "png_dpi": 600,
+  "png_pixels": [
+    3000,
+    3000
+  ],
+  "svg_editable_text": true,
+  "primary_axes": [
+    {
+      "width_in": 4.147638888888888,
+      "height_in": 4.147638888888888,
+      "ratio": 1.0
+    }
+  ],
+  "figcheck_problems": []
+}
