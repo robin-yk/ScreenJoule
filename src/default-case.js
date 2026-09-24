@@ -17,12 +17,12 @@ const DEFAULT_FOAM={
    mode:'P',command:c.power,vmax:c.vmax,imax:c.imax,pmax:c.pmax,
    flow:false,wall:false,study:'steady',parts:[],triangles:null,jlimit:0,
    commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity});
-  status('Default case | Porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings');
+  status('Default case: porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings');
   return;
  }
  let saved=null;try{saved=localStorage.getItem(storageKey);}catch{}
  if(saved){try{restoreSettings(JSON.parse(saved));return;}catch{stateNote.textContent='Saved settings could not be restored.';}}
- const values={shape:'cylinder',nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
+ const values={shape:'cylinder',nominalVolume:Number((Math.PI*c.diameter**2*c.length/4000).toFixed(4)),aspectRatio:c.length/c.diameter,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
   rhoUnit:'ohm-cm',rhoValue:c.rhoSkeleton*100,thermalK:c.kEffective,density:c.densitySkeleton,cp:c.cp,
   imax:c.imax,vmax:c.vmax,pmax:c.pmax,sharedPower:c.power,
   commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity};
@@ -34,6 +34,6 @@ const DEFAULT_FOAM={
   $('porousMode').dispatchEvent(new Event('change'));
   for(const id of ['commonBoundary','sharedPower'])$(id).dispatchEvent(new Event('input'));
  }finally{restoring=false;}
- stateNote.textContent='Default case | Porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings';
+ stateNote.textContent='Default case: porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings';
  Promise.resolve(updateAll()).then(()=>{if(dimension==='2d')return solveSelected2D(false);}).catch(e=>{stateNote.textContent=e.message;});
 })();

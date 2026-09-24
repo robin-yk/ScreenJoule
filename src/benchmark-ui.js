@@ -15,7 +15,7 @@ function benchmarkSummary(){
  text.textContent=comparison;host.append(text);$('benchmarkState').textContent=modified?'Modified preset':'Preset loaded';
 }
 const benchmarkSelect=$('benchmarkPreset');
-for(let i=0;i<literatureRuns.length;i++){const o=document.createElement('option');o.value=String(i);o.textContent=literatureRuns[i].name;benchmarkSelect.append(o);}
+for(let i=0;i<literatureRuns.length;i++){const o=document.createElement('option');o.value=String(i);o.textContent=literatureRuns[i].name.replace(' | ',', ');benchmarkSelect.append(o);}
 benchmarkSelect.onchange=()=>{
  if(worker)return;
  if(benchmarkSelect.value===''){selectedBenchmark=null;benchmarkSnapshot=null;$('benchmarkState').textContent='Custom design';benchmarkSummary();return;}

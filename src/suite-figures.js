@@ -21,7 +21,7 @@ function showSuiteFigure(id,f){
   }
   if(!host.dataset.figureExports){
     host.dataset.figureExports='true';const row=document.createElement('div');row.className='exports';const status=document.createElement('p');status.className='note';
-    for(const type of ['svg','png']){const b=document.createElement('button');b.type='button';b.textContent=type==='svg'?'Save SVG':'Save PNG | 600 dpi';b.onclick=()=>exportFigure(id,type,status);row.append(b);}
+    for(const type of ['svg','png']){const b=document.createElement('button');b.type='button';b.textContent=type==='svg'?'Save SVG':'Save PNG (600 dpi)';b.onclick=()=>exportFigure(id,type,status);row.append(b);}
     host.after(row);row.after(status);
   }
 }
@@ -57,7 +57,7 @@ renderRampChart=function(r){
   const f=Figure5.figure(Figure5.axis(0,end/60),Figure5.axis(celsius(r.input.ambientK),celsius(r.tss)),'Time (min)','Temperature (°C)');
   f.path(Array.from({length:121},(_,i)=>{const t=end*i/120;return[f.x(t/60),f.y(celsius(r.tss-(r.tss-r.input.ambientK)*Math.exp(-t/tau)))];}),'#c0392b');
   const t95=tau*Math.log(20);f.dot(f.x(t95/60),f.y(celsius(r.tss-(r.tss-r.input.ambientK)*.05)),'#444');f.frame();
-  suiteLegend(f,[['Illustrative relaxation','#c0392b'],['95% rise | '+format(t95/60)+' min','#444']]);showSuiteFigure('rampChart',f);
+  suiteLegend(f,[['Illustrative relaxation','#c0392b'],['95% rise at '+format(t95/60)+' min','#444']]);showSuiteFigure('rampChart',f);
 };
 renderLogChart=function(svg,series,yKey,yLabel,xKey='x',xLabel='Electrical resistivity (Ω·cm)',referenceX=null,selected=null){
   const all=series.flatMap(s=>s.points).filter(p=>p[xKey]>0&&p[yKey]>0);if(!all.length)return;

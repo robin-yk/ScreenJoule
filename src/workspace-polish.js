@@ -38,20 +38,20 @@
     d.className='workspace-detail sj-disclosure';s.textContent=title;d.append(s);
     before.before(d);nodes.forEach(n=>d.append(n));
     const changed=new Set();
-    d.addEventListener('input',e=>{if(e.target.matches('input,select,textarea')){changed.add(e.target.id);s.textContent=title+' | edited';}});
-    d.addEventListener('change',e=>{if(e.target.matches('input,select,textarea'))s.textContent=title+' | edited';});
+    d.addEventListener('input',e=>{if(e.target.matches('input,select,textarea')){changed.add(e.target.id);s.textContent=title+' (edited)';}});
+    d.addEventListener('change',e=>{if(e.target.matches('input,select,textarea'))s.textContent=title+' (edited)';});
     return d;
   }
   function mirror(ids,parent){
     const p=document.createElement('p');p.className='sj-design-summary';parent.before(p);
-    const sync=()=>p.textContent=ids.map(id=>$(id)?.textContent.trim()).filter(Boolean).join(' | ');
+    const sync=()=>p.textContent=ids.map(id=>$(id)?.textContent.trim()).filter(Boolean).join(', ');
     ids.forEach(id=>{if($(id))new MutationObserver(sync).observe($(id),{childList:true,subtree:true,characterData:true});});sync();return p;
   }
   if(dim){
     const porous=$('porousMode');
     if(porous){
       const d=group([porous.closest('.field'),$('shapeNote').closest('.field')],'Porous-body model and geometry notes');
-      const sync=()=>d.querySelector('summary').textContent='Porous-body model | '+(porous.value==='effective'?'on':'off');
+      const sync=()=>d.querySelector('summary').textContent='Porous-body model: '+(porous.value==='effective'?'on':'off');
       porous.addEventListener('change',sync);sync();
     }
   }
@@ -68,7 +68,7 @@
   if(dim==='2d'){
     const imported=$('t2dMaterial').closest('article');
     mirror(['t2dMaterial','t2dDimensions','t2dFraction'],imported);
-    group([imported],'Imported design details');
+    group([imported],'Design summary');
     for(const [id,title]of [['t2dWallK','Enclosure settings'],['t2dEndMode','End boundaries and contacts']])group([$(id).closest('article')],title);
     const solver=[...document.querySelectorAll('#thermal2d details')].find(d=>d.querySelector('#t2dMaxIter'));
     if(solver)solver.append($('t2dMeshLabel'));
@@ -83,11 +83,11 @@
     const materialNodes=[...mat.children].filter(n=>n.tagName!=='SUMMARY'&&!n.contains($('material')));
     group(materialNodes,'Edit properties and sources');
     const note=document.createElement('p');note.className='note';mat.querySelector('label').after(note);
-    const materialNote=()=>{note.textContent=$('material').value==='custom'?'Custom properties':$('material').selectedOptions[0]?.textContent.includes('example')?'Illustrative properties':'Preset properties | source in details';};
+    const materialNote=()=>{note.textContent=$('material').value==='custom'?'Custom properties':$('material').selectedOptions[0]?.textContent.includes('example')?'Illustrative properties':'Preset values. Sources under Edit properties.';};
     materialNote();new MutationObserver(materialNote).observe($('materialInfo'),{childList:true});
     for(const id of ['flow','wall','study']){const d=$(id).closest('details');d.open=false;
       const s=d.querySelector('summary'),title=s.textContent;
-      const sync=()=>s.textContent=title+' | '+($(id).type==='checkbox'?($(id).checked?'on':'off'):$(id).selectedOptions[0].textContent);
+      const sync=()=>s.textContent=title+': '+($(id).type==='checkbox'?($(id).checked?'on':'off'):$(id).selectedOptions[0].textContent);
       $(id).addEventListener('change',sync);sync();
     }
     const toolbar=$('solveTop').parentElement;
@@ -99,14 +99,16 @@
     const top=$('topStatus');
     const syncStatus=()=>{
       const raw=$('status').textContent;
-      top.textContent=$('status').classList.contains('error')||!/solid cells/.test(raw)?raw:raw.split(' | ').slice(0,3).join(' | ');
+      top.textContent=$('status').classList.contains('error')||!/solid cells/.test(raw)?raw:(([a,...b])=>a+': '+b.join(', '))(raw.split(' | ').slice(0,3));
       top.classList.toggle('error',$('status').classList.contains('error'));
     };
     new MutationObserver(syncStatus).observe($('status'),{childList:true,characterData:true,subtree:true,attributes:true});syncStatus();
     group([$('status').parentElement,$('budget')],'Calculation details');
-    for(const id of ['supplyPlot','caseList','wallResults'])group([$(id).closest('section')],{'supplyPlot':'Supply operating envelope','caseList':'Saved designs','wallResults':'Wall results'}[id]);
-    $('smax').previousElementSibling.textContent='Maximum temperature | °C';
-    $('savg').previousElementSibling.textContent='Mean temperature | °C';
+    for(const id of ['supplyPlot','caseList','wallResults']){const sec=$(id).closest('section');sec.querySelector('h2')?.remove();group([sec],{'supplyPlot':'Supply operating envelope','caseList':'Saved designs','wallResults':'Wall results'}[id]);}
+    // One Recalculate button: the toolbar copy; the input panel keeps Cancel.
+    $('solve').hidden=true;
+    $('smax').previousElementSibling.textContent='Maximum temperature (°C)';
+    $('savg').previousElementSibling.textContent='Mean temperature (°C)';
     $('smax').parentElement.title=$('savg').parentElement.title='All solid cells, including finite electrodes when enabled';
   }
 })();

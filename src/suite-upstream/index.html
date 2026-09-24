@@ -1013,7 +1013,7 @@
               </div>
               <div class="field full">
                 <label for="porousMode">Porous-body approximation</label>
-                <select id="porousMode"><option value="legacy">Off | existing property treatment</option><option value="effective">On | skeleton density and effective k</option></select>
+                <select id="porousMode"><option value="legacy">Off</option><option value="effective">On (skeleton density, effective k)</option></select>
                 <label for="effectiveK">Body-scale effective k (when enabled)</label>
                 <div class="control-row"><input id="effectiveK" type="number" min="0" step="any" value="60"><span class="unit">W/m·K</span></div>
                 <span class="context-note">Use solid-skeleton density, heat capacity and resistivity. Enter an isotropic effective k for this porosity; 60 is an editable example, not a calibrated value. Internal channel flow, reaction heat and pore-gas storage are excluded. Do not use bulk-density presets without replacing their density with the skeleton value.</span>
@@ -1231,7 +1231,7 @@
         <div class="t2d-results">
           <div class="t2d-map-grid">
             <article class="card t2d-canvas-shell">
-              <div class="card-header"><h3 id="t2dMapTitle">Element temperature</h3><div class="t2d-field-pick"><label for="t2dFieldSelect">Show</label><select id="t2dFieldSelect"><option value="elementTemperature" selected>Temperature | Element</option><option value="temperature">Temperature | Full domain</option><option value="current">Current density |J|</option><option value="heating">Volumetric heating q‴</option></select></div><span id="t2dMeshLabel" class="context-note">Fixed 60 × 60 mesh · solve to update</span></div>
+              <div class="card-header"><h3 id="t2dMapTitle">Element temperature</h3><div class="t2d-field-pick"><label for="t2dFieldSelect">Show</label><select id="t2dFieldSelect"><option value="elementTemperature" selected>Temperature (element)</option><option value="temperature">Temperature (full domain)</option><option value="current">Current density |J|</option><option value="heating">Volumetric heating q‴</option></select></div><span id="t2dMeshLabel" class="context-note">Fixed 60 × 60 mesh · solve to update</span></div>
               <canvas id="thermalMap" width="600" height="600" aria-label="Axisymmetric element, full-height reactor wall, helium, and surrounding-air temperature field"></canvas>
               <div class="t2d-colorbar"><div class="t2d-gradient"></div><div class="t2d-scale"><span id="t2dScaleMin">—</span><span id="t2dScaleLabel">Temperature (°C)</span><span id="t2dScaleMax">—</span></div></div>
               <div id="t2dHover" class="t2d-hover">He flows from top to bottom at 50 sccm. Move over a cell to inspect x, z, material, and temperature.</div>
@@ -1289,7 +1289,7 @@
           <div id="t2dProgress" class="t2d-progress">The 2D field solves automatically when this tab opens.</div>
 
           <article class="card">
-            <div class="card-header"><h3>Imported Single Design</h3><span id="t2dSyncBadge" class="status warn">Not solved</span></div>
+            <div class="card-header"><h3>Design summary</h3><span id="t2dSyncBadge" class="status warn">Not solved</span></div>
             <div class="card-body">
               <table class="metric-table">
                 <tbody>
@@ -1328,7 +1328,7 @@
               <div class="field full"><label for="t2dContactRho">Electrical contact resistivity, ρ<sub>c</sub></label><div class="control-row"><input id="t2dContactRho" type="number" min="0" step="any" value="0"><span class="unit">Ω·m² per end</span></div></div>
               <div class="field full"><span class="context-note">R<sub>c</sub> = ρ<sub>c</sub>/A<sub>eff</sub>. Contact power is reported separately and is excluded from the element heat source.</span></div>
               <div class="field full"><label for="t2dPorosityContrast">Radial solid-fraction contrast, c</label><div class="control-row"><input id="t2dPorosityContrast" type="number" min="-0.95" max="0.95" step="any" value="0"><span class="unit">−0.95 … 0.95</span></div></div>
-              <div class="field full"><span class="context-note">Redistributes the solid radially without changing its mean: φ(r) ∝ 1 + c[2(r/R)²−1], renormalized so the volume-averaged solid fraction stays exactly the value set above. c &gt; 0 packs the solid into the skin, c &lt; 0 into the core; both σ and k follow it with a Bruggeman 3/2 exponent. At c = 0 the solve is unchanged. Set this only when the element really is a porous body: the mean solid fraction is deliberately <em>not</em> reinterpreted as a porosity elsewhere in this model.</span></div>
+              <div class="field full"><span class="context-note">φ(r) ∝ 1 + c[2(r/R)²−1] at fixed mean solid fraction; σ and k follow a Bruggeman 3/2 exponent. c &gt; 0 moves solid to the skin, c &lt; 0 to the core, c = 0 leaves the solve unchanged. Use only for porous elements.</span></div>
             </div>
           </article>
 
@@ -2298,7 +2298,7 @@
       $("tssValue").textContent = fmtTemp(r.tss);
       $("timeValue").textContent = fmtTime(r.adiabaticTime);
       $("feasibleValue").textContent = r.feasible ? "Feasible" : "Unreachable";
-      $("feasibleSub").textContent = `${sig4(r.power)} of ${sig4(r.requiredPower)} W target`;
+      $("feasibleSub").textContent = `${sig4(r.power)} W available, ${sig4(r.requiredPower)} W needed`;
       $("biValue").textContent = sig4(r.bi);
       $("biSub").textContent = r.uniform ? "Bi ≤ screening limit" : "Temperature-gradient risk";
 
@@ -2604,9 +2604,9 @@
       const front=[center(length)];
       for(let i=0;i<=135;i++)front.push(pt(length,Math.PI/2+i*1.5*Math.PI/135));
       polygon(front,shade(.93),"#705632");
-      label(22,26,`Envelope volume ${format(r.g.envelopeVolume*1e6,3)} cm³ | Porosity ${format(r.g.porosity*100,1)}%`,16);
-      label(22,49,'Cutaway schematic | Single-temperature element',13);
-      label(340,292,`L = ${format(r.g.L*1000,3)} mm | D = ${format(r.g.D*1000,3)} mm`,16,"middle");
+      label(22,26,`Envelope volume ${format(r.g.envelopeVolume*1e6,3)} cm³, porosity ${format(r.g.porosity*100,1)}%`,16);
+      label(22,49,'Cutaway schematic, one lumped temperature',13);
+      label(340,292,`L = ${format(r.g.L*1000,3)} mm, D = ${format(r.g.D*1000,3)} mm`,16,"middle");
       svg.setAttribute("aria-label",`Solid cylinder cutaway schematic, one lumped temperature; length ${format(r.g.L*1000,3)} mm, diameter ${format(r.g.D*1000,3)} mm. The cutaway is not a physical bore.`);
     }
 

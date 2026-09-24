@@ -9,4 +9,4 @@ function foamPores(width,height,porosity,poreSize,seed=7){
  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const u=rand(),x=(i+.5+(rand()-.5)*.7)*step,y=(j+.5+(rand()-.5)*.7)*step,r=poreSize*(.28+.24*rand());if(u<keep&&x<width&&y<height)pores.push({x,y,r});}
  return pores;
 }
-const FOAM_STYLE={fill:'rgba(18,10,28,.42)',rim:'rgba(255,255,255,.28)',rimWidth:.8,note:'Pores illustrative | homogenized porous-body model'};
+const FOAM_STYLE={fill:'rgba(18,10,28,.42)',rim:'rgba(255,255,255,.28)',rimWidth:.8,note:'Pores are illustrative; the model treats the foam as a homogenized body'};

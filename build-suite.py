@@ -40,7 +40,20 @@ s=s.replace('[[16,42,67],[40,120,165],[88,184,177],[235,190,70],[211,55,55]]','[
 # A single temperature is represented by a single color, without a false spatial gradient.
 s=s.replace('const light = toRgb(mix(base, [255,255,255], 0.34));','const light = toRgb(base);').replace('const lighter = toRgb(mix(base, [255,255,255], 0.55));','const lighter = toRgb(base);').replace('const dark = toRgb(mix(base, [0,0,0], 0.32));','const dark = toRgb(base);')
 # Replace typographic separators, leaving unit multiplication dots intact.
-s=s.replace(' · ',' | ')
+# Separators: sentences get punctuation, paired headers/values get "/", numbered headings get "N.".
+for a,b in [('`${result.material.name} · ${result.converged?"Converged":"Iteration limit"} · ${format(result.closure*100,3)}% closure`','`${result.material.name}: ${result.converged?"converged":"iteration limit"}, ${format(result.closure*100,3)}% closure`'),
+            ('He · 50 sccm · top → bottom','He, 50 sccm, top → bottom'),
+            ('Fixed 60 × 60 mesh · solve to update','Fixed 60 × 60 mesh; solve to update'),
+            ('options.join(" · or ")','options.join(" or ")'),
+            ('"Set point · within limits"','"Set point within limits"'),
+            (' · within limits`',' within limits`'),
+            ('No continuous gas path · set a positive element–wall gap','No continuous gas path; set a positive element–wall gap'),
+            (' mesh · ${format(2*result.mesh.domainRadius*1000,2)}',' mesh, ${format(2*result.mesh.domainRadius*1000,2)}'),
+            (' mm domain · equal x–z scale · element L/D',' mm domain, equal x–z scale, element L/D'),
+            (' outside air · wall spans all 60 axial cells',' outside air; wall spans all 60 axial cells')]:
+    s=s.replace(a,b)
+s=re.sub(r'(<h3>|<strong>)(\d) · ',r'\1\2. ',s)
+s=s.replace(' · ',' / ')
 s=s.replace("Wismann's tube is the only case with a measured element temperature","The Wismann comparison uses the transcribed maximum element temperature")
 for dim in ['0d','2d']:
  page=s.replace('<html lang="en">','<html lang="en" data-dimension="'+dim+'">')
