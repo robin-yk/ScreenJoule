@@ -1885,19 +1885,6 @@ $('json').onclick=()=>download('joule3d-settings.json',JSON.stringify({schema:'j
   }
 })();
 
-let shared3DInitialized=false;
-window.screenJouleShared=async function(c){
-  if(worker){worker.terminate();solverWorker=null;worker=null;setBusy(false);}
-  const initial=shared3DInitialized?{}:{shape:'rod',meshType:'cartesian',bore:0,nx:32,ny:32,nz:48,alpha:0,rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,flow:false,wall:false,h:100,hc:100,emissivity:0,ambient:20,sink:20,study:'steady',parts:[],triangles:null,jlimit:0};
-  loadParameters({...params(),...initial,porosity:c.porosity??0,resistivityBasis:'skeleton',length:c.length,width:c.diameter,height:c.diameter,rho:c.rho,k:c.k,density:c.density,cp:c.cp,mode:c.mode,command:c.command,imax:c.imax,vmax:c.vmax,pmax:c.pmax});
-  shared3DInitialized=true;
-};
-window.screenJouleCapture=()=>{
- const p=params();if(p.shape!=='rod')return {unsupported:'This geometry is 3D-only. Select Solid cylinder to share with 0D / 2D.'};
- if(!(p.porosity>=0&&p.porosity<1))return {unsupported:'Porosity must be in [0, 1).'};
- return {porosity:p.porosity,length:p.length,diameter:p.width,rho:p.rho*(p.resistivityBasis==='effective'?1-p.porosity:1),k:p.k,density:p.density,cp:p.cp,mode:p.mode,command:p.command,imax:p.imax,vmax:p.vmax,pmax:p.pmax};
-};
-
 // Common thermal envelope UI. Local reactor/electrode settings are preserved.
 (()=>{
  const is3d=!!document.getElementById('rho'),get=id=>document.getElementById(id);
@@ -1918,9 +1905,6 @@ window.screenJouleCapture=()=>{
    baseInputs=function(){const x=base(),v=read();check(v);if(v.commonBoundary!=='local')Object.assign(x,{commonBoundary:v.commonBoundary,surfaceResistance:v.commonBoundary==='insulated'?v.wrapThickness/1000/v.wrapK:0,ambientK:v.outerAmbient+273.15,gasK:v.outerAmbient+273.15,h:v.outerH,convection:true,emissivity:v.outerEmissivity});return x;};
  }
  names.forEach(id=>get(id).addEventListener('input',()=>{display();if(is3d)invalidate();else{try{updateAll();}catch(e){stateNote.textContent=e.message;}}}));
- const capture=window.screenJouleCapture,apply=window.screenJouleShared;
- window.screenJouleCapture=()=>{const v=read();try{check(v);}catch(e){return {unsupported:e.message};}const c=capture();return c.unsupported?c:{...c,...v};};
- window.screenJouleShared=async c=>{for(const id of names)if(c[id]!==undefined)get(id).value=c[id];if(c.commonBoundary===undefined)get('commonBoundary').value='exposed';display();await apply(c);if(!is3d)stateNote.textContent=get('commonBoundary').value==='local'?'Local reactor boundaries':'Shared thermal surroundings';};
  display();
 })();
 </script></body></html>

@@ -18,8 +18,5 @@
    baseInputs=function(){const x=base(),v=read();check(v);if(v.commonBoundary!=='local')Object.assign(x,{commonBoundary:v.commonBoundary,surfaceResistance:v.commonBoundary==='insulated'?v.wrapThickness/1000/v.wrapK:0,ambientK:v.outerAmbient+273.15,gasK:v.outerAmbient+273.15,h:v.outerH,convection:true,emissivity:v.outerEmissivity});return x;};
  }
  names.forEach(id=>get(id).addEventListener('input',()=>{display();if(is3d)invalidate();else{try{updateAll();}catch(e){stateNote.textContent=e.message;}}}));
- const capture=window.screenJouleCapture,apply=window.screenJouleShared;
- window.screenJouleCapture=()=>{const v=read();try{check(v);}catch(e){return {unsupported:e.message};}const c=capture();return c.unsupported?c:{...c,...v};};
- window.screenJouleShared=async c=>{for(const id of names)if(c[id]!==undefined)get(id).value=c[id];if(c.commonBoundary===undefined)get('commonBoundary').value='exposed';display();await apply(c);if(!is3d)stateNote.textContent=get('commonBoundary').value==='local'?'Local reactor boundaries':'Shared thermal surroundings';};
  display();
 })();

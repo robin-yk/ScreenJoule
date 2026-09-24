@@ -5,24 +5,10 @@ header nav{gap:20px}header nav button{border-radius:0;background:transparent;col
 .brand{color:inherit;text-decoration:none;white-space:nowrap}
 </style></head><body><header><a class="brand" href="./" aria-label="ScreenJoule home"><b>ScreenJoule</b></a><nav aria-label="Model dimension" role="tablist"><button id="tab0d" role="tab" aria-selected="true" aria-controls="frame0d">0D</button><button id="tab2d" role="tab" aria-selected="false" aria-controls="frame2d">2D</button><button id="tab3d" role="tab" aria-selected="false" aria-controls="frame3d">3D</button></nav><span id="scope">Lumped energy balance</span><a class="group-link" href="https://dion.che.udel.edu/" target="_blank" rel="noopener noreferrer">Vlachos Group</a></header><main id="models"></main><script>
 const descriptions={'0d':'Lumped energy balance','2d':'Axisymmetric electrothermal field','3d':'Spatial electrothermal field | Stokes flow'},frames={};
-function displayModel(key){if(!descriptions[key])key='0d';if(!frames[key]){const frame=document.createElement('iframe');frame.id='frame'+key;frame.title='Joule'+key.toUpperCase()+' independent workspace';frame.src=key==='3d'?'joule3d.html':'suite/joule'+key+'.html';frame.setAttribute('role','tabpanel');frame.setAttribute('aria-labelledby','tab'+key);document.getElementById('models').append(frame);frames[key]=frame;}for(const k of Object.keys(descriptions)){document.getElementById('tab'+k).setAttribute('aria-selected',String(k===key));if(frames[k])frames[k].hidden=k!==key;}document.getElementById('scope').textContent=descriptions[key];history.replaceState(null,'','#joule'+key);}
-let shared={length:15,diameter:10,rho:.000555556,k:120,density:3210,cp:750,mode:'P',command:10,imax:40,vmax:150,pmax:2000},active=null,switching=false;
-async function selectModel(key){
- if(switching||key===active)return;
- if(active&&frames[active]?.contentWindow.screenJouleCapture){
-  const c=frames[active].contentWindow.screenJouleCapture();
-  if(c.unsupported){alert(c.unsupported);return;}
-  if(Object.entries(c).some(([k,v])=>!['mode','commonBoundary'].includes(k)&&!Number.isFinite(v))){alert('Finish entering valid values before switching tabs.');return;}
-  shared=c;
- }
- switching=true;
- try{
-  displayModel(key);
-  const w=frames[key].contentWindow,start=Date.now();
-  while(!w.screenJouleShared){if(Date.now()-start>30000)throw Error('Workspace did not load.');await new Promise(r=>setTimeout(r,100));}
-  await w.screenJouleShared(shared);active=key;
- }catch(e){alert(e.message);}finally{switching=false;}
-}
+function displayModel(key){if(!frames[key]){const frame=document.createElement('iframe');frame.id='frame'+key;frame.title='Joule'+key.toUpperCase()+' independent workspace';frame.src=key==='3d'?'joule3d.html':'suite/joule'+key+'.html';frame.setAttribute('role','tabpanel');frame.setAttribute('aria-labelledby','tab'+key);document.getElementById('models').append(frame);frames[key]=frame;}for(const k of Object.keys(descriptions)){document.getElementById('tab'+k).setAttribute('aria-selected',String(k===key));if(frames[k])frames[k].hidden=k!==key;}document.getElementById('scope').textContent=descriptions[key];history.replaceState(null,'','#joule'+key);}
+// Each workspace keeps its own inputs; switching tabs transfers nothing.
+let active=null;
+function selectModel(key){if(!descriptions[key])key='3d';if(key===active)return;displayModel(key);active=key;}
 for(const k of Object.keys(descriptions))document.getElementById('tab'+k).onclick=()=>selectModel(k);
 window.addEventListener('hashchange',()=>selectModel(location.hash.replace('#joule','')||'3d'));selectModel(location.hash.replace('#joule','')||'3d');
 document.querySelector('nav').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const keys=Object.keys(descriptions),i=keys.findIndex(k=>document.getElementById('tab'+k)===document.activeElement),key=keys[(i+(e.key==='ArrowRight'?1:2))%3];document.getElementById('tab'+key).focus();selectModel(key);});

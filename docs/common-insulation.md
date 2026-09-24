@@ -1,6 +1,6 @@
 # Shared thermal surroundings
 
-The 0D, 2D and 3D workspaces offer exposed surroundings, a finite insulation layer, and existing local reactor/electrode settings. Common inputs transfer on tab changes: outside air temperature, external convection coefficient, outer emissivity, insulation thickness and conductivity. No perfect-insulation option is provided. External h, thickness and conductivity must be finite and positive for the insulated mode.
+The 0D, 2D and 3D workspaces offer exposed surroundings, a finite insulation layer, and existing local reactor/electrode settings. Each workspace holds its own values for outside air temperature, external convection coefficient, outer emissivity, insulation thickness and conductivity; switching tabs does not transfer them. No perfect-insulation option is provided. External h, thickness and conductivity must be finite and positive for the insulated mode.
 
 The common approximation places thickness/conductivity in series with external convection and radiation on every external face, including end faces. Radiation is evaluated at the outer layer temperature. Area is held constant; this is an equivalent surface resistance, not a geometrically resolved thick cylindrical shell. 0D applies this resistance to the envelope area; 2D and 3D additionally retain the solid half-cell conduction resistance. Insulation heat capacity is omitted. Geometry-dependent surface areas, including voxel staircasing in 3D, still differ.
 
