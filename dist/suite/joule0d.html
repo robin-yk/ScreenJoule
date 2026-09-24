@@ -3442,10 +3442,10 @@ drawDynChart=function(history,plan){
       $('unifiedStop').onclick=()=>{stop=true;$('unifiedSweepStatus').textContent='Stopping after the active condition…';};$('unifiedOutput').onchange=render;$('unifiedSweepExport').onclick=()=>download('joule2d-screening.json',JSON.stringify(state,null,2));
     }
 
-    const dimension=document.documentElement.dataset.dimension,storageKey='joule.workspace.'+dimension+'.v1';let restoring=false,saveTimer;
+    const dimension=document.documentElement.dataset.dimension,storageKey='joule.workspace.'+dimension+'.v2';let restoring=false,saveTimer;
     const controls=()=>Array.from(document.querySelectorAll('input[id],select[id],textarea[id]')).filter(el=>!['file','button','submit'].includes(el.type)&&!el.id.startsWith('unified'));
     function captureSettings(){return {schema:'joule-workspace-1',dimension,fields:Object.fromEntries(controls().map(el=>[el.id,el.type==='checkbox'||el.type==='radio'?el.checked:el.value])),supplyMode:document.querySelector('.mode-btn.active')?.dataset.mode};}
-    function restoreSettings(data){if(data?.schema!=='joule-workspace-1'||data.dimension!==dimension||!data.fields||typeof data.fields!=='object')throw Error('Choose a '+dimension.toUpperCase()+' settings file.');restoring=true;try{for(const el of controls()){if(!(el.id in data.fields))continue;const value=data.fields[el.id];if(el.type==='checkbox'||el.type==='radio')el.checked=!!value;else if(el.tagName==='SELECT'){if(Array.from(el.options).some(o=>o.value===String(value)))el.value=value;}else el.value=String(value);}document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===data.supplyMode));syncShape();updateAll();syncDynControls();}finally{restoring=false;}}
+    function restoreSettings(data){if(data?.schema!=='joule-workspace-1'||data.dimension!==dimension||!data.fields||typeof data.fields!=='object')throw Error('Choose a '+dimension.toUpperCase()+' settings file.');restoring=true;try{for(const el of controls()){if(!(el.id in data.fields))continue;const value=data.fields[el.id];if(el.type==='checkbox'||el.type==='radio')el.checked=!!value;else if(el.tagName==='SELECT'){if(Array.from(el.options).some(o=>o.value===String(value)))el.value=value;}else el.value=String(value);}document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===data.supplyMode));syncShape();$('porousMode')?.dispatchEvent(new Event('change'));for(const id of ['commonBoundary','sharedPower'])$(id)?.dispatchEvent(new Event('input'));updateAll();syncDynControls();}finally{restoring=false;}}
     const nav=document.createElement('nav');nav.className='unified-tabs';nav.setAttribute('aria-label','Workspace sections');nav.innerHTML='<button data-section="model" aria-selected="true">Model</button><button data-section="screening" aria-selected="false">Screening</button><button data-section="reference" aria-selected="false">Equations &amp; limits</button><div class="unified-actions"><button id="unifiedSave">Export settings</button><button id="unifiedLoad">Import settings</button><input id="unifiedFile" type="file" accept=".json" hidden></div>';document.body.prepend(nav);
     const stateNote=document.createElement('p');stateNote.className='workspace-note';stateNote.setAttribute('role','status');document.querySelector('main').prepend(stateNote);
     const showSection=name=>{for(const b of nav.querySelectorAll('[data-section]'))b.setAttribute('aria-selected',String(b.dataset.section===name));activateTab(name==='model'?(dimension==='2d'?'thermal2d':'calculator'):name);stateNote.textContent=dimension==='0d'?'Joule0D | One representative element temperature | Independent inputs and saved settings':'Joule2D | Axisymmetric r / z model | Rectangular elements use the stated equivalent cylinder';};
@@ -3459,9 +3459,9 @@ drawDynChart=function(history,plan){
       const extra=document.querySelector('#thermal2d .t2d-inputs');document.querySelector('#calculator .input-column').append(extra);extra.style.border='0';extra.style.padding='0';for(const el of extra.querySelectorAll('.t2d-controls,#t2dProgress,.section-head-row'))el.hidden=true;
     }
     // Each document has its own memory and persistent settings namespace.
-    for(const event of ['input','change','click'])document.addEventListener(event,e=>{if(restoring||window.sharedConvection||!e.target.closest('input,select,textarea,.mode-btn'))return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(storageKey,JSON.stringify(captureSettings()));}catch{stateNote.textContent='Device storage unavailable | Export settings to retain this model.';}},250);});
+    for(const event of ['input','change','click'])document.addEventListener(event,e=>{if(restoring||!e.target.closest('input,select,textarea,.mode-btn'))return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(storageKey,JSON.stringify(captureSettings()));}catch{stateNote.textContent='Device storage unavailable | Export settings to retain this model.';}},250);});
     $('unifiedSave').onclick=()=>download('joule'+dimension+'-settings.json',JSON.stringify(captureSettings(),null,2));$('unifiedLoad').onclick=()=>$('unifiedFile').click();$('unifiedFile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>2e6)throw Error('Settings file exceeds 2 MB.');restoreSettings(JSON.parse(await f.text()));localStorage.setItem(storageKey,JSON.stringify(captureSettings()));stateNote.textContent='Settings restored for Joule'+dimension.toUpperCase();}catch(err){stateNote.textContent=err.message;}finally{e.target.value='';}};
-    try{const saved=localStorage.getItem(storageKey);if(saved)restoreSettings(JSON.parse(saved));}catch{stateNote.textContent='Saved settings could not be restored.';}
+    // Saved settings are restored in default-case.js, after all input controls exist.
     const reference=$('reference'),original=document.createElement('details');original.className='audit';const summary=document.createElement('summary');summary.textContent='Derivations, material data and literature comparisons';original.append(summary);for(const node of Array.from(reference.children))original.append(node);reference.append(original);
     const scope=document.createElement('div');scope.className='card';scope.style.padding='24px';scope.innerHTML=dimension==='0d'?'<h2>Joule0D | Equations &amp; limits</h2><p>One element temperature determines resistance and heat loss. The operating current follows the selected supply mode and its voltage, current, power and current-density constraints.</p><p>R = ρ(T)L/A + 2R<sub>contact</sub><br>P<sub>bulk</sub> = I²R<sub>bulk</sub><br>P<sub>bulk</sub>(T<sub>ss</sub>) = Q<sub>loss</sub>(T<sub>ss</sub>)<br>mC<sub>p</sub>(T)dT/dt = P<sub>bulk</sub>(T) − Q<sub>loss</sub>(T)</p><p>Heat loss uses the selected enclosure, gap, wall, radiation and end conditions. This workspace reports a representative temperature and lumped heating estimates; it does not resolve an internal temperature field. Screening evaluates the same 0D model. Preset properties and maximum current densities retain the source engine assumptions.</p>':'<h2>Joule2D | Equations &amp; limits</h2><p>The source finite-volume operator resolves radial and axial heat conduction through the element, gap, wall, process gas and outside region. Electrical potential distributes the bulk heating budget.</p><p>∇ | (σ∇φ) = 0<br>ρC<sub>p</sub>∂T/∂t = ∇ | (k∇T) + q<sub>Joule</sub> − gas enthalpy transport</p><p>The supply resistance uses mean element temperature. Field dissipation is normalized to the operating-point bulk power. Helium transport is prescribed; momentum and pressure are not solved. Rectangular elements use an explicitly described surface-equivalent cylinder. Transient calculations retain the source backward-Euler operator and pulse integration. Screening solves an independent 2D field at every sampled point.</p>';
     reference.insertBefore(scope,original);showSection('model');
@@ -3627,7 +3627,6 @@ const powerInput=document.createElement('input');powerInput.type='number';powerI
 powerInput.addEventListener('input',()=>{sharedPower=powerInput.value===''?null:Math.max(0,Number(powerInput.value));updateAll();});
 const boundaryLabel=document.createElement('label');boundaryLabel.textContent='Thermal boundary';const boundarySelect=document.createElement('select');boundarySelect.innerHTML='<option value="direct">Direct convection</option><option value="enclosure">Reactor enclosure</option>';boundaryLabel.append(boundarySelect);powerLabel.after(boundaryLabel);
 boundarySelect.onchange=()=>{window.sharedConvection=boundarySelect.value==='direct';stateNote.textContent=window.sharedConvection?'Shared heater | Direct convection, no radiation':'Shared heater | Local enclosure boundaries';updateAll();};
-$('unifiedSave').addEventListener('click',e=>{if(window.sharedConvection){e.stopImmediatePropagation();alert('Shared direct-convection settings export is not yet supported.');}},true);
 
 // Common thermal envelope UI. Local reactor/electrode settings are preserved.
 (()=>{
@@ -3688,6 +3687,46 @@ $('unifiedSave').addEventListener('click',e=>{if(window.sharedConvection){e.stop
    <svg viewBox="0 0 540 480" style="width:100%;min-height:480px" role="img" aria-label="Temperature versus equivalent insulation thickness at fixed delivered power"><path d="M65 50V430H505" fill="none" stroke="currentColor"/><polyline points="${points}" fill="none" stroke="#bc6428" stroke-width="2"/><path d="M65 ${yy(val('insTarget'))}H505" stroke="#555" stroke-dasharray="5 4"/><text x="280" y="477" text-anchor="middle">Equivalent thickness (mm)</text><text x="16" y="240" transform="rotate(-90 16 240)" text-anchor="middle">Temperature (°C)</text>${ticks}</svg><p class="note">Dashed: target / measured temperature. Solid: fixed-power estimate; not a material operating rating. ${r.requiredMm>val('insRange')?'Required thickness exceeds the displayed range.':''}</p>`;
   }catch(e){el('insResult').textContent=e.message;}
  });
+})();
+
+// Common starting case: every workspace opens on the same porous SiC foam bar.
+// A square bar is exact on the 3D Cartesian grid, so all three models see the same surface area.
+// Workspaces stay independent afterwards; nothing is transferred on tab changes.
+const DEFAULT_FOAM={
+ length:30,width:8,height:8,porosity:.5,
+ rhoSkeleton:.000555556,kEffective:60,densitySkeleton:3210,cp:750,
+ power:60,vmax:150,imax:40,pmax:2000,
+ outerAmbient:20,outerH:12,outerEmissivity:.9
+};
+(()=>{
+ const c=DEFAULT_FOAM,is3d=typeof loadParameters==='function';
+ if(is3d){
+  loadParameters({...params(),shape:'block',meshType:'cartesian',bore:0,nx:12,ny:12,nz:45,
+   length:c.length,width:c.width,height:c.height,
+   porosity:c.porosity,resistivityBasis:'skeleton',rho:c.rhoSkeleton,alpha:0,k:c.kEffective,density:c.densitySkeleton,cp:c.cp,
+   rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,
+   mode:'P',command:c.power,vmax:c.vmax,imax:c.imax,pmax:c.pmax,
+   flow:false,wall:false,study:'steady',parts:[],triangles:null,jlimit:0,
+   commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity});
+  status('Default case | Porous SiC foam bar, '+c.length+' × '+c.width+' × '+c.height+' mm, '+c.power+' W, exposed surroundings');
+  return;
+ }
+ let saved=null;try{saved=localStorage.getItem(storageKey);}catch{}
+ if(saved){try{restoreSettings(JSON.parse(saved));return;}catch{stateNote.textContent='Saved settings could not be restored.';}}
+ const values={shape:'box',boxLength:c.length,boxWidth:c.width,boxHeight:c.height,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
+  rhoUnit:'ohm-cm',rhoValue:c.rhoSkeleton*100,thermalK:c.kEffective,density:c.densitySkeleton,cp:c.cp,
+  imax:c.imax,vmax:c.vmax,pmax:c.pmax,sharedPower:c.power,
+  commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity};
+ restoring=true;
+ try{
+  for(const [id,v]of Object.entries(values))$(id).value=v;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode==='auto'));
+  syncShape();
+  $('porousMode').dispatchEvent(new Event('change'));
+  for(const id of ['commonBoundary','sharedPower'])$(id).dispatchEvent(new Event('input'));
+ }finally{restoring=false;}
+ stateNote.textContent='Default case | Porous SiC foam bar, '+c.length+' × '+c.width+' × '+c.height+' mm, '+c.power+' W, exposed surroundings';
+ Promise.resolve(updateAll()).then(()=>{if(dimension==='2d')return solveSelected2D(false);}).catch(e=>{stateNote.textContent=e.message;});
 })();
 
   })();
