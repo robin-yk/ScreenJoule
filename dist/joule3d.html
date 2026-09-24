@@ -73,7 +73,7 @@ body>nav.unified-tabs>button[aria-selected="true"],body>nav[aria-label="Main"]>b
 <header><div><b>ScreenJoule</b> <span> / 3D workspace</span></div><span>CAD | 3D Stokes flow | conjugate heat transfer</span><a href="joule3d.html" download="joule3d.html">Download HTML</a></header>
 <nav aria-label="Main"><button id="worktab" aria-pressed="true">Model</button><button id="screeningtab" aria-pressed="false">Screening</button><button id="methodtab" aria-pressed="false">Equations & limits</button></nav>
 <main><section id="workspace" class="workspace">
-<aside class="inputs panel"><label>Benchmark preset<select id="benchmarkPreset"><option value="">Custom design</option></select></label><p id="benchmarkState" class="note" aria-live="polite">Custom design</p><h2>Geometry</h2><label>Grid coordinates<select id="meshType"><option value="cartesian">Cartesian | all domains</option><option value="annular">Annular r / θ / z | solid tube</option></select></label><div id="annularInputs" hidden><div class="row"><label>Radial cells<input id="nr" type="number" value="4" min="2" max="64"></label><label>Angular cells<input id="nt" type="number" value="48" min="8" max="192"></label></div><p class="note">Exact annular volumes and radial face areas. Axial count uses Z cells or 3 × the mesh preset. Gas and reactor wall require Cartesian coordinates.</p></div><button id="plateMesh" type="button">Thin plate grid | 16 × 6 × 60</button><p id="meshDimensions" class="note"></p><label>Solid shape<select id="shape"><option value="block">Rectangular bar</option><option value="neck">Bar with narrow center</option><option value="rod">Solid cylinder</option><option value="tube" selected>Hollow tube</option><option value="cad">CAD parts (union / subtract)</option><option value="stl">Imported STL</option></select></label>
+<aside class="inputs panel"><label>Benchmark preset<select id="benchmarkPreset"><option value="">Custom design</option></select></label><p id="benchmarkState" class="note" aria-live="polite">Custom design</p><h2>Geometry</h2><label>Grid coordinates<select id="meshType"><option value="cartesian">Cartesian | all domains</option><option value="annular">Annular r / θ / z | cylinder or tube</option></select></label><div id="annularInputs" hidden><div class="row"><label>Radial cells<input id="nr" type="number" value="4" min="2" max="64"></label><label>Angular cells<input id="nt" type="number" value="48" min="8" max="192"></label></div><p class="note">Exact annular volumes and radial face areas. Axial count uses Z cells or 3 × the mesh preset. Gas and reactor wall require Cartesian coordinates.</p></div><button id="plateMesh" type="button">Thin plate grid | 16 × 6 × 60</button><p id="meshDimensions" class="note"></p><label>Solid shape<select id="shape"><option value="block">Rectangular bar</option><option value="neck">Bar with narrow center</option><option value="rod">Solid cylinder</option><option value="tube" selected>Hollow tube</option><option value="cad">CAD parts (union / subtract)</option><option value="stl">Imported STL</option></select></label>
 <div class="row"><label>Length (mm)<input id="length" type="number" value="30" min="1" step="1"></label><label>Width / Ø (mm)<input id="width" type="number" value="12" min=".1" step=".5"></label></div>
 <div class="row"><label id="heightrow">Thickness (mm)<input id="height" type="number" value="4" min=".05" step=".1"></label><label id="borerow" hidden>Bore Ø (mm)<input id="bore" type="number" value="8" min="0" step=".5"></label><label>Mesh<select id="n"><option value="6">Coarse | 6 × 6 × 18</option><option value="10">Medium | 10 × 10 × 30</option><option value="16">Fine | 16 × 16 × 48</option><option value="22" selected>Finer | 22 × 22 × 66</option></select></label></div>
 <details id="cadpanel"><summary>CAD geometry</summary>
@@ -422,8 +422,34 @@ function edgeMetric(m,e){return e.length>3?{area:e[3],a:e[4],b:e[5]}:{area:m.are
 function faceMetric(m,f){return f.length>4?{area:f[4],distance:f[5]}:{area:m.area[f[1]],distance:m.d[f[1]]/2};}
 function terminalMetric(m,a){return m.volumes?{area:m.volumes[a]/m.d[2],distance:m.d[2]/2}:{area:m.area[2],distance:m.d[2]/2};}
 function geometryKey(p){return JSON.stringify(['meshType','shape','length','width','height','bore','n','nx','ny','nz','nr','nt','contact','offsetA','offsetB','electrodeLength','flow','channelWidth','channelHeight','wall','wallGeometry','wallThickness','wallWidth','wallHeight','parts','triangles','wallParts','wallTriangles'].map(k=>[k,p[k]??null]));}
+// Solid cylinder on the annular grid: one axis-centred core cell per z layer plus nr-1 rings.
+// The core node represents the core volume mean; for uniform heating the mean-to-rim drop is
+// q r^2/(8k) against a rim flux q r/2, giving an equivalent conduction distance r/4.
+function makeSolidAnnularGrid(p){
+ const ro=p.width/2000,L=p.length/1000,nr=p.nr||4,nt=p.nt||48,nz=p.nz||3*p.n;
+ if(!(ro>0&&L>0)||![nr,nt,nz].every(Number.isInteger)||nr<2||nt<8||nz<3||nr>64||nt>192||nz>192||nz*(1+(nr-1)*nt)>60000)throw Error('Annular mesh: 2–64 radial, 8–192 angular, 3–192 axial cells; maximum 60,000.');
+ const dr=ro/nr,dt=2*Math.PI/nt,dz=L/nz,perLayer=1+(nr-1)*nt,N=nz*perLayer,xyz=[],ijk=[],volumes=[],edges=[],faces=[],termA=[],termB=[],region=[];
+ const id=(i,j,k)=>k*perLayer+(i===0?0:1+(i-1)*nt+(j+nt)%nt),coreArea=Math.PI*dr*dr;
+ for(let k=0;k<nz;k++){const z=-L/2+(k+.5)*dz,zone=p.electrodeLength>0?(z<-L/2+p.electrodeLength/1000?1:z>L/2-p.electrodeLength/1000?2:0):0;
+  for(let i=0;i<nr;i++)for(let j=0;j<(i===0?1:nt);j++){
+   const a=id(i,j,k),r=i===0?0:(i+.5)*dr,t=(j+.5)*dt,r0=i*dr,r1=r0+dr,A=i===0?coreArea:.5*(r1*r1-r0*r0)*dt;
+   xyz.push([r*Math.cos(t),r*Math.sin(t),z]);ijk.push([i,j,k]);volumes.push(A*dz);region.push(zone);
+   if(i===0){for(let jj=0;jj<nt;jj++){const rb=1.5*dr;edges.push([a,id(1,jj,k),0,dr*dt*dz,dr/4,dr*Math.log(rb/dr)]);}}
+   else{
+    if(i<nr-1){const rf=r1;edges.push([a,id(i+1,j,k),0,rf*dt*dz,rf*Math.log(rf/r),rf*Math.log((r+dr)/rf)]);}
+    const half=dr*dt/(2*Math.log(r1/r0));edges.push([a,id(i,j+1,k),1,dr*dz,half,half]);
+   }
+   if(k<nz-1)edges.push([a,id(i,j,k+1),2,A,dz/2,dz/2]);
+   if(i===nr-1)faces.push([a,0,1,0,ro*dt*dz,ro*Math.log(ro/r)]);
+   for(const sign of [-1,1])if(k===(sign<0?0:nz-1)){const off=(sign<0?p.offsetA:p.offsetB)/100*ro;const terminal=Math.abs(xyz[a][0]-off)<=p.contact/100*ro+1e-12?(sign<0?1:2):0;faces.push([a,2,sign,terminal,A,dz/2]);if(terminal===1)termA.push(a);if(terminal===2)termB.push(a);}
+  }}
+ if(!termA.length||!termB.length)throw Error('An electrode covers no annular cells. Increase its width or angular resolution.');
+ if(p.electrodeLength>0&&(!region.includes(0)||!region.includes(1)||!region.includes(2)))throw Error('Resolve both electrodes and a heater region along Z.');
+ return {kind:'annular',core:true,N,nx:nr,ny:nt,nz,nr,nt,ri:0,ro,dr,dt,W:2*ro,H:2*ro,L,d:[dr,dt,dz],xyz,ijk,volumes:Float64Array.from(volumes),region:Int8Array.from(region),edges,faces,termA,termB};
+}
 function makeAnnularGrid(p){
- if(p.shape!=='tube'||p.flow||p.wall)throw Error('Annular grid supports a hollow solid tube with gas and wall disabled. Select Cartesian for coupled gas/wall calculations.');
+ if((p.shape==='rod'||(p.shape==='tube'&&p.bore===0))&&!p.flow&&!p.wall)return makeSolidAnnularGrid(p);
+ if(p.shape!=='tube'||p.flow||p.wall)throw Error('Annular grid supports solid cylinders and hollow tubes with gas and wall disabled. Select Cartesian for coupled gas/wall calculations.');
  const ri=p.bore/2000,ro=p.width/2000,L=p.length/1000,nr=p.nr||4,nt=p.nt||48,nz=p.nz||3*p.n;
  if(!(ri>0&&ro>ri&&L>0)||![nr,nt,nz].every(Number.isInteger)||nr<2||nt<8||nz<3||nr>64||nt>192||nz>192||nr*nt*nz>60000)throw Error('Annular mesh: 2–64 radial, 8–192 angular, 3–192 axial cells; maximum 60,000. Bore must be positive.');
  const dr=(ro-ri)/nr,dt=2*Math.PI/nt,dz=L/nz,N=nr*nt*nz,xyz=[],ijk=[],volumes=[],edges=[],faces=[],termA=[],termB=[],region=[];
@@ -442,7 +468,8 @@ function makeAnnularGrid(p){
  if(p.electrodeLength>0&&(!region.includes(0)||!region.includes(1)||!region.includes(2)))throw Error('Resolve both electrodes and a heater region along Z.');
  return {kind:'annular',N,nx:nr,ny:nt,nz,nr,nt,ri,ro,dr,dt,W:2*ro,H:2*ro,L,d:[dr,dt,dz],xyz,ijk,volumes:Float64Array.from(volumes),region:Int8Array.from(region),edges,faces,termA,termB};
 }
-function annularFacePolygon(m,a,axis,sign){const [i,j,k]=m.ijk[a],r0=m.ri+i*m.dr,r1=r0+m.dr,t0=j*m.dt,t1=t0+m.dt,z0=-m.L/2+k*m.d[2],z1=z0+m.d[2];const point=(r,t,z)=>[r*Math.cos(t),r*Math.sin(t),z];let points,normal;
+function annularFacePolygon(m,a,axis,sign){if(m.core&&m.ijk[a][0]===0){const z=-m.L/2+m.ijk[a][2]*m.d[2]+(sign<0?0:m.d[2]);if(axis!==2)return {points:[[0,0,z],[0,0,z],[0,0,z]],normal:[0,0,0],center:[0,0,z]};const points=Array.from({length:m.nt},(_,n)=>{const t=(sign<0?m.nt-n:n)*m.dt;return [m.dr*Math.cos(t),m.dr*Math.sin(t),z];});return {points,normal:[0,0,sign],center:[0,0,z]};}
+ const [i,j,k]=m.ijk[a],r0=m.ri+i*m.dr,r1=r0+m.dr,t0=j*m.dt,t1=t0+m.dt,z0=-m.L/2+k*m.d[2],z1=z0+m.d[2];const point=(r,t,z)=>[r*Math.cos(t),r*Math.sin(t),z];let points,normal;
  if(axis===0){const r=sign<0?r0:r1,t=(t0+t1)/2;points=[point(r,t0,z0),point(r,t1,z0),point(r,t1,z1),point(r,t0,z1)];normal=[sign*Math.cos(t),sign*Math.sin(t),0];}
  else if(axis===1){const t=sign<0?t0:t1;points=[point(r0,t,z0),point(r1,t,z0),point(r1,t,z1),point(r0,t,z1)];normal=[-sign*Math.sin(t),sign*Math.cos(t),0];}
  else{const z=sign<0?z0:z1;points=[point(r0,t0,z),point(r1,t0,z),point(r1,t1,z),point(r0,t1,z)];normal=[0,0,sign];}
@@ -711,7 +738,20 @@ function makeIC0(diag,edges,g){const n=diag.length;
   return r=>{const z=Float64Array.from(r);for(let i=0;i<n;i++){for(const j of rows[i])z[i]-=lower[i].get(j)*z[j];z[i]/=ld[i];}for(let i=n-1;i>=0;i--){z[i]/=ld[i];for(const j of rows[i])z[j]-=lower[i].get(j)*z[i];}return z;};
 
 }
-</script><script>/* Resistivity in the source catalog is Ω cm; solver inputs are Ω m. */
+</script><script>// Illustrative open-cell foam texture shared by the 0D, 2D and 3D views.
+// The solvers treat porosity as a homogenized body; these pores are drawn for
+// recognition only and carry no geometric or numerical meaning.
+function foamRandom(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+// Pores in a width × height box (any units): jittered grid, coverage grows with porosity.
+function foamPores(width,height,porosity,poreSize,seed=7){
+ const pores=[];if(!(porosity>0)||!(width>0)||!(height>0)||!(poreSize>0))return pores;
+ const rand=foamRandom(seed),step=poreSize*1.15,cols=Math.ceil(width/step),rows=Math.ceil(height/step),keep=Math.min(.92,.35+porosity);
+ for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const u=rand(),x=(i+.5+(rand()-.5)*.7)*step,y=(j+.5+(rand()-.5)*.7)*step,r=poreSize*(.28+.24*rand());if(u<keep&&x<width&&y<height)pores.push({x,y,r});}
+ return pores;
+}
+const FOAM_STYLE={fill:'rgba(18,10,28,.42)',rim:'rgba(255,255,255,.28)',rimWidth:.8,note:'Pores illustrative | homogenized porous-body model'};
+
+/* Resistivity in the source catalog is Ω cm; solver inputs are Ω m. */
 const materialCatalog=[
   {
     "name": "CFP",
@@ -1559,6 +1599,14 @@ function sizeCanvas(canvas){const box=canvas.getBoundingClientRect(),ratio=windo
 const stops=[[22,13,61],[89,18,105],[168,46,94],[232,91,56],[253,164,45],[246,251,164]];
 function colour(v){const t=Math.max(0,Math.min(.999999,v))*(stops.length-1),i=Math.floor(t),f=t-i;return 'rgb('+stops[i].map((n,j)=>Math.round(n+(stops[i+1][j]-n)*f)).join(',')+')';}
 function rotation(q){const a=q[0]*Math.cos(yaw)+q[2]*Math.sin(yaw),b=-q[0]*Math.sin(yaw)+q[2]*Math.cos(yaw);return[a,q[1]*Math.cos(pitch)-b*Math.sin(pitch),q[1]*Math.sin(pitch)+b*Math.cos(pitch)];}
+// At most one pore per face, clipped to the face and placed in its own plane so it foreshortens.
+function drawFacePores(c,face,porosity,proj){
+  const rand=foamRandom(face.a*6151+face.k*97+(face.sign>0?13:0));if(rand()>Math.min(.85,.3+porosity))return;
+  const[p0,p1,,p3]=face.pts3,u=p1.map((x,i)=>x-p0[i]),v=p3.map((x,i)=>x-p0[i]),s=.5+(rand()-.5)*.4,t=.5+(rand()-.5)*.4,r=.2+.16*rand();
+  const pt=a=>{const x=s+r*Math.cos(a)*Math.min(1,Math.hypot(...v)/Math.hypot(...u)),y=t+r*Math.sin(a)*Math.min(1,Math.hypot(...u)/Math.hypot(...v));return proj(p0.map((q,i)=>q+x*u[i]+y*v[i]));};
+  c.save();c.beginPath();face.points.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.clip();
+  c.beginPath();for(let n=0;n<=16;n++){const q=pt(n*Math.PI/8);n?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);}c.closePath();c.fillStyle=FOAM_STYLE.fill;c.fill();c.strokeStyle=FOAM_STYLE.rim;c.lineWidth=FOAM_STYLE.rimWidth;c.stroke();c.restore();
+}
 function draw(){
   const[c,w,h]=sizeCanvas($('scene'));c.clearRect(0,0,w,h);drawn=[];if(!model)return;
   const gasField=['gasT','speed','pressure'].includes($('field').value)&&result?.gas;const wallField=['wallT','wallGeometry','assembly'].includes($('field').value)&&model.wall3d;const m=$('field').value==='assembly'&&model.assembly?model.assembly:wallField?model.wall3d.mesh:gasField?result.gas.mesh:model;viewModel=m;const scale=.79*Math.min(w,h)/(Math.max(m.L,m.W,m.H))*zoom,proj=q=>{const r=rotation(q);return[w/2+r[0]*scale,h/2-r[1]*scale,r[2]];};
@@ -1568,18 +1616,19 @@ function draw(){
   const shown=Uint8Array.from(m.xyz,q=>axis<0||q[axis]<=threshold),faces=m.faces.filter(f=>shown[f[0]]);
   if(axis>=0)for(const [a,b,k]of m.edges)if(shown[a]!==shown[b])faces.push(shown[a]?[a,k,1,0]:[b,k,-1,0]);
   for(const [a,k,sign,terminal]of faces){
-    let center,points;
-    if(m.kind==='annular'){const face=annularFacePolygon(m,a,k,sign);if(rotation(face.normal)[2]<=1e-7)continue;center=face.center;points=face.points.map(proj);}
+    let center,points,pts3;
+    if(m.kind==='annular'){const face=annularFacePolygon(m,a,k,sign);if(rotation(face.normal)[2]<=1e-7)continue;center=face.center;pts3=face.points;points=pts3.map(proj);}
     else{const normal=[0,0,0];normal[k]=sign;if(rotation(normal)[2]<=1e-7)continue;
     center=m.xyz[a].slice();center[k]+=sign*m.d[k]/2;const axes=[0,1,2].filter(n=>n!==k);points=[];
-    for(const[u,v]of [[-1,-1],[1,-1],[1,1],[-1,1]]){const q=center.slice();q[axes[0]]+=u*m.d[axes[0]]/2;q[axes[1]]+=v*m.d[axes[1]]/2;points.push(proj(q));}}
-    drawn.push({a,k,sign,terminal,points,depth:proj(center)[2],fill:values?colour(hi===lo?.5:(values[a]-lo)/(hi-lo)):terminal===1?'#26b9cf':terminal===2?'#f39c43':m.region?.[a]===3?'#dedede':m.region?.[a]?'#797979':'#b4b4b4'});
+    pts3=[];for(const[u,v]of [[-1,-1],[1,-1],[1,1],[-1,1]]){const q=center.slice();q[axes[0]]+=u*m.d[axes[0]]/2;q[axes[1]]+=v*m.d[axes[1]]/2;pts3.push(q);points.push(proj(q));}}
+    drawn.push({a,k,sign,terminal,points,pts3,depth:proj(center)[2],fill:values?colour(hi===lo?.5:(values[a]-lo)/(hi-lo)):terminal===1?'#26b9cf':terminal===2?'#f39c43':m.region?.[a]===3?'#dedede':m.region?.[a]?'#797979':'#b4b4b4'});
   }
   drawn.sort((a,b)=>a.depth-b.depth);
-  for(const face of drawn){c.beginPath();face.points.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.fillStyle=face.fill;c.fill();c.strokeStyle=$('mesh').checked?'rgba(20,35,60,.35)':face.fill;c.lineWidth=$('mesh').checked?.55:.5;c.stroke();}
+  const porosity=m===model?params().porosity||0:0;
+  for(const face of drawn){c.beginPath();face.points.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.fillStyle=face.fill;c.fill();c.strokeStyle=$('mesh').checked?'rgba(20,35,60,.35)':face.fill;c.lineWidth=$('mesh').checked?.55:.5;c.stroke();if(porosity>0&&face.pts3.length===4)drawFacePores(c,face,porosity,proj);}
   for(const[list,label]of [[m.termA,'A'],[m.termB,'B']]){if(!list.length)continue;const q=[0,0,m.xyz[list[0]][2]+(label==='A'?-1:1)*m.d[2]/2];for(const a of list){q[0]+=m.xyz[a][0]/list.length;q[1]+=m.xyz[a][1]/list.length;}const r=proj(q);c.fillStyle='#292929';c.beginPath();c.arc(r[0],r[1],11,0,2*Math.PI);c.fill();c.fillStyle='#fff';c.font= '14px Helvetica, Arial, sans-serif' ;c.textAlign='center';c.textBaseline='middle';c.fillText(label,r[0],r[1]);}
   [['X','#a5373c',[1,0,0]],['Y','#247858',[0,1,0]],['Z','#235fbc',[0,0,1]]].forEach(([name,color,q])=>{const r=rotation(q);c.strokeStyle=color;c.beginPath();c.moveTo(48,h-49);c.lineTo(48+r[0]*30,h-49-r[1]*30);c.stroke();c.fillStyle=color;c.font= '13px Helvetica, Arial, sans-serif' ;c.fillText(name,48+r[0]*40,h-49-r[1]*40);});
-  $('viewhint').textContent=(result?'Solved field':'Geometry preview')+' | drag to rotate | scroll to zoom'+(axis>=0?' | '+['X','Y','Z'][axis]+' ≤ '+fmt(threshold*1000)+' mm':'');
+  $('viewhint').textContent=(result?'Solved field':'Geometry preview')+' | drag to rotate | scroll to zoom'+(axis>=0?' | '+['X','Y','Z'][axis]+' ≤ '+fmt(threshold*1000)+' mm':'')+(porosity>0?' | '+FOAM_STYLE.note:'');
 }
 function inside(x,y,points){let hit=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;}
 $('scene').onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,total:0};$('scene').setPointerCapture(e.pointerId);};
@@ -1601,11 +1650,11 @@ function partsDisplay(){const list=$('cadTarget').value==='wall'?wallParts:cadPa
 $('addpart').onclick=()=>{if(worker)return;const a={type:$('parttype').value,op:$('partop').value,width:Number($('partwidth').value),height:Number($('partheight').value),diameter:Number($('partwidth').value),length:Number($('partlength').value),x:Number($('partx').value),y:Number($('party').value),z:Number($('partz').value)};if(![a.width,a.height,a.length].every(v=>v>0)){status('CAD dimensions must be positive.',true);return;}if($('cadTarget').value==='wall'){wallParts.push(a);fitWallCAD();$('wall').checked=true;$('flow').checked=true;$('wallGeometry').value='cad3d';$('field').value='assembly';}else{cadParts.push(a);fitCAD();$('shape').value='cad';}partsDisplay();invalidate();};
 $('clearparts').onclick=()=>{if(worker)return;if($('cadTarget').value==='wall')wallParts=[];else cadParts=[];partsDisplay();invalidate();};
 $('stlfile').onchange=async e=>{if(worker)return;try{const file=e.target.files[0];if(!file)return;const parsed=parseSTL(await file.arrayBuffer());stlTriangles=parsed.triangles;['width','height','length'].forEach((k,i)=>$(k).value=Number(parsed.dimensions[i].toPrecision(6)));$('channelWidth').value=Math.max(Number($('channelWidth').value),parsed.dimensions[0]*1.5);$('channelHeight').value=Math.max(Number($('channelHeight').value),parsed.dimensions[1]*1.5);$('shape').value='stl';$('stlinfo').textContent=file.name+' | '+stlTriangles.length+' triangles | closed edges checked';invalidate();}catch(err){status(err.message,true);}};
-$('stlexport').onclick=()=>{if(!model)return;if(model.kind==='annular'){const lines=['solid Joule3D'];for(const[a,k,sign]of model.faces){const f=annularFacePolygon(model,a,k,sign),v=f.points.map(p=>p.map(x=>x*1000)),u=v[1].map((x,i)=>x-v[0][i]),w=v[2].map((x,i)=>x-v[0][i]),cross=[u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0]];if(cross.reduce((s,x,i)=>s+x*f.normal[i],0)<0)v.reverse();for(const tri of [[0,1,2],[0,2,3]])lines.push('facet normal '+f.normal.join(' '),'outer loop',...tri.map(i=>'vertex '+v[i].join(' ')),'endloop','endfacet');}lines.push('endsolid Joule3D');download('joule3d-annular.stl',lines.join('\n'),'model/stl');return;}const lines=['solid Joule3D'];for(const[a,k,sign]of model.faces){const center=model.xyz[a].map(v=>v*1000);center[k]+=sign*model.d[k]*500;const axes=[0,1,2].filter(v=>v!==k),vertices=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>{const q=center.slice();q[axes[0]]+=u*model.d[axes[0]]*500;q[axes[1]]+=v*model.d[axes[1]]*500;return q;});if((k===1?-1:1)!==sign)vertices.reverse();const normal=[0,0,0];normal[k]=sign;for(const inds of [[0,1,2],[0,2,3]])lines.push('facet normal '+normal.join(' '),'outer loop',...inds.map(i=>'vertex '+vertices[i].join(' ')),'endloop','endfacet');}lines.push('endsolid Joule3D');download('joule3d-voxel.stl',lines.join('\n'),'model/stl');};
+$('stlexport').onclick=()=>{if(!model)return;if(model.kind==='annular'){const lines=['solid Joule3D'];for(const[a,k,sign]of model.faces){const f=annularFacePolygon(model,a,k,sign),v=f.points.map(p=>p.map(x=>x*1000)),u=v[1].map((x,i)=>x-v[0][i]),w=v[2].map((x,i)=>x-v[0][i]),cross=[u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0]];if(cross.reduce((s,x,i)=>s+x*f.normal[i],0)<0)v.reverse();if(f.normal.every(x=>x===0))continue;for(const tri of v.slice(2).map((_,n)=>[0,n+1,n+2]))lines.push('facet normal '+f.normal.join(' '),'outer loop',...tri.map(i=>'vertex '+v[i].join(' ')),'endloop','endfacet');}lines.push('endsolid Joule3D');download('joule3d-annular.stl',lines.join('\n'),'model/stl');return;}const lines=['solid Joule3D'];for(const[a,k,sign]of model.faces){const center=model.xyz[a].map(v=>v*1000);center[k]+=sign*model.d[k]*500;const axes=[0,1,2].filter(v=>v!==k),vertices=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>{const q=center.slice();q[axes[0]]+=u*model.d[axes[0]]*500;q[axes[1]]+=v*model.d[axes[1]]*500;return q;});if((k===1?-1:1)!==sign)vertices.reverse();const normal=[0,0,0];normal[k]=sign;for(const inds of [[0,1,2],[0,2,3]])lines.push('facet normal '+normal.join(' '),'outer loop',...inds.map(i=>'vertex '+vertices[i].join(' ')),'endloop','endfacet');}lines.push('endsolid Joule3D');download('joule3d-voxel.stl',lines.join('\n'),'model/stl');};
 
 new ResizeObserver(()=>{draw();chart();}).observe($('scene'));window.addEventListener('resize',chart);controls();invalidate();
 
-function updateMeshDimensions(){if(!model)return;const m=model,p=params();if(m.kind==='annular'){$('meshDimensions').textContent='Annular grid '+m.nr+' × '+m.nt+' × '+m.nz+' | OD '+p.width+' mm | Bore '+p.bore+' mm | Radial spacing '+fmt(m.dr*1000,4)+' mm';return;}const ext=[0,1,2].map(a=>{const c=m.xyz.map(q=>q[a]);return (Math.max(...c)-Math.min(...c)+m.d[a])*1000;});$('meshDimensions').textContent='Grid '+m.nx+' × '+m.ny+' × '+m.nz+' | Represented solid X / Y / Z: '+ext.map(v=>fmt(v,4)).join(' / ')+' mm | Cell spacing: '+m.d.map(v=>fmt(v*1000,4)).join(' / ')+' mm';}
+function updateMeshDimensions(){if(!model)return;const m=model,p=params();if(m.kind==='annular'){$('meshDimensions').textContent=(m.core?'Solid annular grid core + ':'Annular grid ')+m.nr+' × '+m.nt+' × '+m.nz+' | OD '+p.width+' mm | Bore '+p.bore+' mm | Radial spacing '+fmt(m.dr*1000,4)+' mm';return;}const ext=[0,1,2].map(a=>{const c=m.xyz.map(q=>q[a]);return (Math.max(...c)-Math.min(...c)+m.d[a])*1000;});$('meshDimensions').textContent='Grid '+m.nx+' × '+m.ny+' × '+m.nz+' | Represented solid X / Y / Z: '+ext.map(v=>fmt(v,4)).join(' / ')+' mm | Cell spacing: '+m.d.map(v=>fmt(v*1000,4)).join(' / ')+' mm';}
 $('useCompletedField').onclick=()=>{if(worker)return;if(!lastCompletedState){status('Complete a calculation first.',true);return;}savedInitialState=structuredClone(lastCompletedState);$('initialMode').value='saved';$('study').value='transient';$('restartInfo').textContent='Saved field selected | '+savedInitialState.temperatureK.length+' cells';invalidate();};
 
 $('plateMesh').onclick=()=>{if(worker)return;if($('shape').value!=='block'||$('flow').checked||$('wall').checked){status('Thin plate grid applies to a rectangular solid with gas and wall disabled. Independent X / Y / Z counts remain available for other cases.',true);return;}$('meshType').value='cartesian';$('nx').value=16;$('ny').value=6;$('nz').value=60;invalidate();};
@@ -1908,11 +1957,11 @@ $('json').onclick=()=>download('joule3d-settings.json',JSON.stringify({schema:'j
  display();
 })();
 
-// Common starting case: every workspace opens on the same porous SiC foam bar.
-// A square bar is exact on the 3D Cartesian grid, so all three models see the same surface area.
+// Common starting case: every workspace opens on the same porous SiC foam cylinder.
+// 3D uses the solid annular grid, which keeps the exact cylinder surface area.
 // Workspaces stay independent afterwards; nothing is transferred on tab changes.
 const DEFAULT_FOAM={
- length:30,width:8,height:8,porosity:.5,
+ length:30,diameter:10,porosity:.5,
  rhoSkeleton:.000555556,kEffective:60,densitySkeleton:3210,cp:750,
  power:60,vmax:150,imax:40,pmax:2000,
  outerAmbient:20,outerH:12,outerEmissivity:.9
@@ -1920,19 +1969,19 @@ const DEFAULT_FOAM={
 (()=>{
  const c=DEFAULT_FOAM,is3d=typeof loadParameters==='function';
  if(is3d){
-  loadParameters({...params(),shape:'block',meshType:'cartesian',bore:0,nx:12,ny:12,nz:45,
-   length:c.length,width:c.width,height:c.height,
+  loadParameters({...params(),shape:'rod',meshType:'annular',bore:0,nr:8,nt:48,nz:45,
+   length:c.length,width:c.diameter,height:c.diameter,
    porosity:c.porosity,resistivityBasis:'skeleton',rho:c.rhoSkeleton,alpha:0,k:c.kEffective,density:c.densitySkeleton,cp:c.cp,
    rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,
    mode:'P',command:c.power,vmax:c.vmax,imax:c.imax,pmax:c.pmax,
    flow:false,wall:false,study:'steady',parts:[],triangles:null,jlimit:0,
    commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity});
-  status('Default case | Porous SiC foam bar, '+c.length+' × '+c.width+' × '+c.height+' mm, '+c.power+' W, exposed surroundings');
+  status('Default case | Porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings');
   return;
  }
  let saved=null;try{saved=localStorage.getItem(storageKey);}catch{}
  if(saved){try{restoreSettings(JSON.parse(saved));return;}catch{stateNote.textContent='Saved settings could not be restored.';}}
- const values={shape:'box',boxLength:c.length,boxWidth:c.width,boxHeight:c.height,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
+ const values={shape:'cylinder',nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
   rhoUnit:'ohm-cm',rhoValue:c.rhoSkeleton*100,thermalK:c.kEffective,density:c.densitySkeleton,cp:c.cp,
   imax:c.imax,vmax:c.vmax,pmax:c.pmax,sharedPower:c.power,
   commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity};
@@ -1944,7 +1993,7 @@ const DEFAULT_FOAM={
   $('porousMode').dispatchEvent(new Event('change'));
   for(const id of ['commonBoundary','sharedPower'])$(id).dispatchEvent(new Event('input'));
  }finally{restoring=false;}
- stateNote.textContent='Default case | Porous SiC foam bar, '+c.length+' × '+c.width+' × '+c.height+' mm, '+c.power+' W, exposed surroundings';
+ stateNote.textContent='Default case | Porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings';
  Promise.resolve(updateAll()).then(()=>{if(dimension==='2d')return solveSelected2D(false);}).catch(e=>{stateNote.textContent=e.message;});
 })();
 </script></body></html>

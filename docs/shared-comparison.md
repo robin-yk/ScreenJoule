@@ -1,16 +1,22 @@
-# Default foam bar and shared cylinder comparison
+# Default foam cylinder and shared cylinder comparison
 
 ## Default starting case
 
-All three workspaces open on the same porous SiC foam bar (`src/default-case.js`): 30 × 8 × 8 mm, porosity 0.5, skeleton resistivity 0.000555556 Ω m, effective thermal conductivity 60 W/m K, skeleton density 3210 kg/m³, heat capacity 750 J/kg K, 60 W power setpoint under 150 V / 40 A / 2 kW ceilings, full-face ideal electrodes, and exposed surroundings at 20 °C with h = 12 W/m² K and emissivity 0.9. A square bar is represented exactly on the 3D Cartesian grid, so all three models use the same surface area; the 2D workspace uses its stated equivalent cylinder. Saved 0D/2D settings on the device take precedence over this default.
+All three workspaces open on the same porous SiC foam cylinder (`src/default-case.js`): Ø10 × 30 mm, porosity 0.5, skeleton resistivity 0.000555556 Ω m, effective thermal conductivity 60 W/m K, skeleton density 3210 kg/m³, heat capacity 750 J/kg K, 60 W power setpoint under 150 V / 40 A / 2 kW ceilings, full-face ideal electrodes, and exposed surroundings at 20 °C with h = 12 W/m² K and emissivity 0.9. 3D uses the solid annular grid (8 radial × 48 angular × 45 axial cells, with an axis-centred core cell), which keeps the exact cylinder surface area. Saved 0D/2D settings on the device take precedence over this default.
 
 Browser check on first load:
 
 | Model | Mean temperature (°C) | Maximum (°C) |
 | --- | ---: | ---: |
-| 0D | 707.9 | – |
-| 2D, equivalent cylinder | 709.5 | 712.8 |
-| 3D, 12 × 12 × 45 grid | 709.5 | 712.9 |
+| 0D | 705.0 | – |
+| 2D | 706.6 | 710.0 |
+| 3D, solid annular grid | 706.7 | 709.9 |
+
+Pores drawn in the three views are illustrative. All models treat the foam as a homogenized porous body.
+
+## Solid annular grid
+
+`makeSolidAnnularGrid` in `src/engine.js` meshes a solid cylinder with one core cell per axial layer and nr − 1 rings. The core node represents the core volume mean; its radial conduction distance to the core rim is r/4, the mean-to-rim drop for uniform heating. Hollow-tube annular meshes are unchanged (bit-identical temperatures before and after). `tests/solid-annular.test.mjs` checks exact volume, lateral area and resistance, second-order convergence to the end-cooled analytic profile (RMS error 5.5×10⁻³, 1.4×10⁻³ and 3.4×10⁻⁴ K on 4×16×24, 8×32×48 and 16×32×96 grids), the small-Biot lumped balance, and energy closure with an offset partial electrode. On the shared cylinder below, the solid annular grid gives 179.37 °C against 179.2 °C (0D) and 179.4 °C (2D).
 
 ## Shared cylinder comparison
 

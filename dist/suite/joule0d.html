@@ -3689,11 +3689,55 @@ boundarySelect.onchange=()=>{window.sharedConvection=boundarySelect.value==='dir
  });
 })();
 
-// Common starting case: every workspace opens on the same porous SiC foam bar.
-// A square bar is exact on the 3D Cartesian grid, so all three models see the same surface area.
+// Illustrative open-cell foam texture shared by the 0D, 2D and 3D views.
+// The solvers treat porosity as a homogenized body; these pores are drawn for
+// recognition only and carry no geometric or numerical meaning.
+function foamRandom(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+// Pores in a width × height box (any units): jittered grid, coverage grows with porosity.
+function foamPores(width,height,porosity,poreSize,seed=7){
+ const pores=[];if(!(porosity>0)||!(width>0)||!(height>0)||!(poreSize>0))return pores;
+ const rand=foamRandom(seed),step=poreSize*1.15,cols=Math.ceil(width/step),rows=Math.ceil(height/step),keep=Math.min(.92,.35+porosity);
+ for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const u=rand(),x=(i+.5+(rand()-.5)*.7)*step,y=(j+.5+(rand()-.5)*.7)*step,r=poreSize*(.28+.24*rand());if(u<keep&&x<width&&y<height)pores.push({x,y,r});}
+ return pores;
+}
+const FOAM_STYLE={fill:'rgba(18,10,28,.42)',rim:'rgba(255,255,255,.28)',rimWidth:.8,note:'Pores illustrative | homogenized porous-body model'};
+
+// Foam texture for the 0D schematic and the 2D field (see foam-texture.js).
+(()=>{
+ const NS='http://www.w3.org/2000/svg',el=(tag,attrs)=>{const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;};
+ // One tiled SVG pattern; the tile is large enough that repetition is not obvious.
+ function foamPattern(svg,porosity,id){
+  const tile=84,defs=svg.querySelector('defs')||svg.insertBefore(el('defs',{}),svg.firstChild),pattern=el('pattern',{id,width:tile,height:tile,patternUnits:'userSpaceOnUse'});
+  for(const p of foamPores(tile,tile,porosity,8,23))for(const dx of [-tile,0,tile])for(const dy of [-tile,0,tile])pattern.append(el('circle',{cx:p.x+dx,cy:p.y+dy,r:p.r,fill:FOAM_STYLE.fill,stroke:FOAM_STYLE.rim,'stroke-width':FOAM_STYLE.rimWidth}));
+  defs.append(pattern);return `url(#${id})`;
+ }
+ const baseGeometry=renderGeometryVisual;
+ renderGeometryVisual=function(r){
+  baseGeometry(r);const svg=$('geometryVisual'),phi=r.g.porosity;if(!(phi>0))return;
+  // Replace the regular pore grid on the box with the shared foam texture.
+  svg.querySelector('g[clip-path="url(#boxPoreClip)"]')?.remove();
+  const fill=foamPattern(svg,phi,'foamTexture0d'),faces=[...svg.querySelectorAll('polygon')].filter(p=>p.getAttribute('fill')?.startsWith('rgb'));
+  for(const face of faces){const overlay=face.cloneNode();overlay.setAttribute('fill',fill);overlay.setAttribute('stroke','none');overlay.setAttribute('pointer-events','none');face.after(overlay);}
+  const box=svg.viewBox.baseVal,note=el('text',{x:box&&box.width?box.width-12:660,y:box&&box.height?box.height-10:318,fill:'#8a949c','font-size':11,'font-family':'Arial','text-anchor':'end'});note.textContent=FOAM_STYLE.note;svg.append(note);
+ };
+ const base2D=draw2D;
+ draw2D=function(result){
+  base2D(result);const phi=result.g.porosity;if($('t2dFoamNote'))$('t2dFoamNote').hidden=!(phi>0);if(!(phi>0))return;
+  const canvas=$('thermalMap'),map=canvas._physicalMap,ctx=canvas.getContext('2d');if(!map)return;
+  const R=result.mesh.radius,L=result.g.L,x0=map.cx-R*map.scale,y0=map.oy+(result.mesh.domainHeight/2-L/2)*map.scale,w=2*R*map.scale,h=L*map.scale;
+  ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.clip();
+  for(const p of foamPores(w,h,phi,Math.max(5,Math.min(w,h)/14),11)){ctx.beginPath();ctx.arc(x0+p.x,y0+p.y,p.r,0,2*Math.PI);ctx.fillStyle=FOAM_STYLE.fill;ctx.fill();ctx.strokeStyle=FOAM_STYLE.rim;ctx.lineWidth=FOAM_STYLE.rimWidth;ctx.stroke();}
+  ctx.restore();
+  ctx.strokeStyle='#102a43';ctx.lineWidth=3;ctx.strokeRect(x0,y0,w,h);
+  let note=$('t2dFoamNote');if(!note){note=document.createElement('p');note.id='t2dFoamNote';note.style.cssText='margin:6px 0 0;font-size:11px;color:#8a949c;text-align:center';canvas.parentElement.after(note);}note.textContent=FOAM_STYLE.note;
+ };
+})();
+
+// Common starting case: every workspace opens on the same porous SiC foam cylinder.
+// 3D uses the solid annular grid, which keeps the exact cylinder surface area.
 // Workspaces stay independent afterwards; nothing is transferred on tab changes.
 const DEFAULT_FOAM={
- length:30,width:8,height:8,porosity:.5,
+ length:30,diameter:10,porosity:.5,
  rhoSkeleton:.000555556,kEffective:60,densitySkeleton:3210,cp:750,
  power:60,vmax:150,imax:40,pmax:2000,
  outerAmbient:20,outerH:12,outerEmissivity:.9
@@ -3701,19 +3745,19 @@ const DEFAULT_FOAM={
 (()=>{
  const c=DEFAULT_FOAM,is3d=typeof loadParameters==='function';
  if(is3d){
-  loadParameters({...params(),shape:'block',meshType:'cartesian',bore:0,nx:12,ny:12,nz:45,
-   length:c.length,width:c.width,height:c.height,
+  loadParameters({...params(),shape:'rod',meshType:'annular',bore:0,nr:8,nt:48,nz:45,
+   length:c.length,width:c.diameter,height:c.diameter,
    porosity:c.porosity,resistivityBasis:'skeleton',rho:c.rhoSkeleton,alpha:0,k:c.kEffective,density:c.densitySkeleton,cp:c.cp,
    rhoCurve:[],kCurve:[],cpCurve:[],contact:100,offsetA:0,offsetB:0,electrodeLength:0,contactR:0,thermalR:0,
    mode:'P',command:c.power,vmax:c.vmax,imax:c.imax,pmax:c.pmax,
    flow:false,wall:false,study:'steady',parts:[],triangles:null,jlimit:0,
    commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity});
-  status('Default case | Porous SiC foam bar, '+c.length+' × '+c.width+' × '+c.height+' mm, '+c.power+' W, exposed surroundings');
+  status('Default case | Porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings');
   return;
  }
  let saved=null;try{saved=localStorage.getItem(storageKey);}catch{}
  if(saved){try{restoreSettings(JSON.parse(saved));return;}catch{stateNote.textContent='Saved settings could not be restored.';}}
- const values={shape:'box',boxLength:c.length,boxWidth:c.width,boxHeight:c.height,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
+ const values={shape:'cylinder',nominalVolume:Math.PI*c.diameter**2*c.length/4000,aspectRatio:c.length/c.diameter,voidFraction:c.porosity,porousMode:'effective',effectiveK:c.kEffective,
   rhoUnit:'ohm-cm',rhoValue:c.rhoSkeleton*100,thermalK:c.kEffective,density:c.densitySkeleton,cp:c.cp,
   imax:c.imax,vmax:c.vmax,pmax:c.pmax,sharedPower:c.power,
   commonBoundary:'exposed',outerAmbient:c.outerAmbient,outerH:c.outerH,outerEmissivity:c.outerEmissivity};
@@ -3725,7 +3769,7 @@ const DEFAULT_FOAM={
   $('porousMode').dispatchEvent(new Event('change'));
   for(const id of ['commonBoundary','sharedPower'])$(id).dispatchEvent(new Event('input'));
  }finally{restoring=false;}
- stateNote.textContent='Default case | Porous SiC foam bar, '+c.length+' × '+c.width+' × '+c.height+' mm, '+c.power+' W, exposed surroundings';
+ stateNote.textContent='Default case | Porous SiC foam cylinder, Ø'+c.diameter+' × '+c.length+' mm, '+c.power+' W, exposed surroundings';
  Promise.resolve(updateAll()).then(()=>{if(dimension==='2d')return solveSelected2D(false);}).catch(e=>{stateNote.textContent=e.message;});
 })();
 
