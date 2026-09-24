@@ -61,3 +61,6 @@ html[data-dimension="2d"] #thermal2d .t2d-layout{height:auto!important;overflow:
 body>nav.unified-tabs,body>nav[aria-label="Main"]{gap:24px!important}
 body>nav.unified-tabs>button,body>nav[aria-label="Main"]>button{border-radius:0!important;padding:9px 0!important;border:0!important;border-bottom:2px solid transparent!important;background:transparent!important}
 body>nav.unified-tabs>button[aria-selected="true"],body>nav[aria-label="Main"]>button[aria-pressed="true"]{background:transparent!important;border-bottom-color:#222!important}
+
+/* Narrow screens: keep the colour legend out of the result text. */
+@media(max-width:720px){.legend{position:static;width:auto;max-width:220px;margin:8px 12px 0 auto}}
