@@ -3239,7 +3239,7 @@
       $("propertyBody").innerHTML = MATERIALS.map((m) => `<tr>
         <td>${m.name}</td><td>${format(m.rhoOhmCm,7)}</td><td>${format(m.density,0)} kg/m³</td>
         <td>${format(m.cp,0)} J/kg·K</td><td>${format(m.k,1)} W/m·K</td><td>${format(m.jmax,2)} A/m²</td>
-        <td>${m.model || "constant"}</td><td>${m.source || "user input"}</td></tr>`).join("");
+        <td>${m.model || "constant"}</td><td>${m.source || "user input"}${m.jmaxBasis?`. Jmax: ${m.jmaxBasis}`:""}</td></tr>`).join("");
     }
 
     function init() {

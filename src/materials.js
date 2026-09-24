@@ -7,6 +7,7 @@ const materialCatalog=[
     "cp": 990,
     "k": 400,
     "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) default 10⁷ A/m² for comparison; Table 1 lists none",
     "source": "Mittal et al. (2025), Table 1",
     "model": "constant; anisotropy not represented",
     "id": "catalog-0",
@@ -21,6 +22,7 @@ const materialCatalog=[
     "cp": 750,
     "k": 120,
     "jmax": 5000000,
+    "jmaxBasis": "Mittal (2025) Table 1",
     "source": "Mittal et al. (2025), Table 1",
     "model": "constant grade proxy",
     "id": "catalog-1",
@@ -35,6 +37,7 @@ const materialCatalog=[
     "cp": 680,
     "k": 140,
     "jmax": 5000000,
+    "jmaxBasis": "SiC value, Mittal (2025) Table 1",
     "rhoTable": [
       [
         20,
@@ -97,6 +100,7 @@ const materialCatalog=[
     "cp": 420,
     "k": 30,
     "jmax": 3000000,
+    "jmaxBasis": "Origin not traced",
     "rhoTable": [
       [
         20,
@@ -155,6 +159,7 @@ const materialCatalog=[
     "cp": 460,
     "k": 11,
     "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) default 10⁷ A/m² for comparison; NiCr resistance-wire ampacity is 1.5–2.1×10⁷ A/m² at 540–760 °C in still air (OEM Heaters guide)",
     "rhoFactor": [
       [
         20,
@@ -295,6 +300,7 @@ const materialCatalog=[
     "cp": 460,
     "k": 15,
     "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) default 10⁷ A/m² for comparison; NiCr resistance-wire ampacity is 1.5–2.1×10⁷ A/m² at 540–760 °C in still air (OEM Heaters guide)",
     "rhoFactor": [
       [
         20,
@@ -463,6 +469,7 @@ const materialCatalog=[
     "cp": 448,
     "k": 11.2,
     "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) default 10⁷ A/m² for comparison; NiCr resistance-wire ampacity is 1.5–2.1×10⁷ A/m² at 540–760 °C in still air (OEM Heaters guide)",
     "rhoTable": [
       [
         20,
@@ -615,6 +622,7 @@ const materialCatalog=[
     "cp": 500,
     "k": 16.2,
     "jmax": 5000000,
+    "jmaxBasis": "Mittal (2025) Table 1",
     "rhoAlpha": 0.00094,
     "source": "Mittal Table 1; standardized RT correction",
     "model": "linear ρ(T); Cp,k constant",
@@ -629,7 +637,8 @@ const materialCatalog=[
     "density": 10220,
     "cp": 251,
     "k": 138,
-    "jmax": 300000,
+    "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) default 10⁷ A/m² for comparison. Table 1 lists 3×10⁵, from a glass-melting electrode erosion limit of 2–3 A/cm² (2–3×10⁴ A/m²), not a heater limit",
     "rhoAlpha": 0.0046,
     "source": "NIST resistivity compilation; Mittal Table 1",
     "model": "linear ρ(T); Cp,k constant",
@@ -645,6 +654,7 @@ const materialCatalog=[
     "cp": 134,
     "k": 164,
     "jmax": 30000000,
+    "jmaxBasis": "Mittal (2025) Table 1",
     "rhoAlpha": 0.0045,
     "source": "NIST resistivity compilation; Mittal Table 1",
     "model": "linear ρ(T); Cp,k constant",
@@ -660,6 +670,7 @@ const materialCatalog=[
     "cp": 385,
     "k": 400,
     "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) Table 1; insulated Cu wire ampacity is 2.1–3.7×10⁷ A/m² at 30 °C ambient (OEM Heaters guide)",
     "rhoAlpha": 0.00393,
     "source": "NIST recommended data",
     "model": "linear ρ(T); Cp,k constant",
@@ -674,7 +685,8 @@ const materialCatalog=[
     "density": 2700,
     "cp": 897,
     "k": 237,
-    "jmax": 5000000000,
+    "jmax": 10000000,
+    "jmaxBasis": "Mittal (2025) default 10⁷ A/m² for comparison. Table 1 lists 5×10⁹, an integrated-circuit thin-film electromigration scale (Sze), not a heater limit",
     "rhoAlpha": 0.00429,
     "source": "NIST recommended data",
     "model": "linear ρ(T); Cp,k constant",
@@ -690,6 +702,7 @@ const materialCatalog=[
     "cp": 523,
     "k": 17,
     "jmax": 4500000,
+    "jmaxBasis": "Mittal (2025) Table 1",
     "rhoAlpha": 0.0038,
     "source": "Mittal Table 1; RT correction",
     "model": "linear ρ(T); Cp,k constant",
