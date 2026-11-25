@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {solveModel}=require('./src/engine');
+const {solveModel}=require('../../src/engine');
 const base={shape:'block',length:40,width:10,height:2,bore:6,n:6,rho:1e-4,k:120,alpha:0,density:3210,cp:750,contact:100,offsetA:0,offsetB:0,mode:'V',command:8,vmax:50,imax:30,pmax:100,ambient:25,sink:25,h:15,emissivity:.8,hc:2000,maxTemp:2000,study:'steady',duration:2,dt:.25,period:1,duty:.5,initial:25};
 const report=[];
 function check(name,fn){const data=fn();report.push({name,pass:true,...data});console.log(name+': PASS',data);}
@@ -39,4 +39,4 @@ check('Temperature-dependent resistivity and power-supply limits',()=>{
 check('Tube and rod resistance use the actual voxel cross-section',()=>{
  const values={};for(const shape of ['rod','tube']){const r=solveModel({...base,shape,n:8}),expected=base.rho*.04**2/r.stats.volume;assert(Math.abs(r.stats.R/expected-1)<1e-7);values[shape]=r.stats.R;}return values;
 });
-require('node:fs').writeFileSync('validation.json',JSON.stringify(report,null,2)+'\n');
+require('node:fs').writeFileSync('tests/results/validation.json',JSON.stringify(report,null,2)+'\n');

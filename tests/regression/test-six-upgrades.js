@@ -1,6 +1,6 @@
 const fs=require('fs'),assert=require('assert/strict');
 const api=new Function(['flow','wall3d','engine'].map(n=>fs.readFileSync('src/'+n+'.js','utf8')).join('\n')+';return {solveModel,makeGrid,edgeMetric,faceMetric,cg,annularFacePolygon};')();
-const base={...require('./validation-literature.json').results[1].params,meshType:'annular',nr:3,nt:16,nz:12};
+const base={...require('../../research/literature/validation-literature.json').results[1].params,meshType:'annular',nr:3,nt:16,nz:12};
 const reports=[];
 for(const nr of [3,6]){const p={...base,nr},r=api.solveModel(p),analytic=p.rho*.5/(Math.PI*(.003**2-.00265**2));assert(Math.abs(r.stats.R/analytic-1)<1e-7);assert(r.stats.energyError<1e-7);assert(Math.abs(r.stats.volume/(Math.PI*(.003**2-.00265**2)*.5)-1)<1e-12);reports.push({case:'annular resistance',nr,R:r.stats.R,analytic,Tmax:r.stats.max,energy:r.stats.energyError});}
 // Radial heat conduction with fixed inner/outer temperatures using the production mesh metrics.
@@ -9,4 +9,4 @@ const steady=api.solveModel(base),restart=api.solveModel({...base,study:'transie
 const plate={...base,meshType:'cartesian',shape:'block',length:38,width:8,height:.21,nx:16,ny:6,nz:60,rho:.0005,k:400,mode:'P',command:10};const pr=api.solveModel(plate);assert(Math.abs(pr.stats.R/(plate.rho*.038/(.008*.00021))-1)<1e-6);reports.push({case:'thin plate',R:pr.stats.R,energy:pr.stats.energyError});
 const gas={...plate,n:5,nx:0,ny:0,nz:0,height:4,length:10,channelWidth:16,channelHeight:12,flow:true,flowRate:1,gasInlet:20,gasK:.026,gasCp:1005,gasDensity:1.2,mu:1.8e-5};api.solveModel(gas);const cached=api.solveModel({...gas,command:11}),fresh=api.solveModel({...gas,command:11,reuse:false});assert(cached.cache.gridReused&&cached.cache.flowReused);assert(Math.abs(cached.stats.max-fresh.stats.max)<1e-9);assert.equal(cached.gas.stats.dp,fresh.gas.stats.dp);assert(!api.solveModel({...gas,mu:2e-5}).cache.flowReused);assert(!api.solveModel({...gas,channelWidth:18}).cache.gridReused);assert.throws(()=>api.solveModel({...base,flow:true}),/Cartesian/);reports.push({case:'flow reuse',cachedMax:cached.stats.max,freshMax:fresh.stats.max});
 const restored=api.solveModel(JSON.parse(JSON.stringify({...base,study:'transient',command:0,duration:.2,dt:.1,period:1,duty:1,initialState:steady.restart})));assert(Math.abs(restored.stats.avg-restart.stats.avg)<1e-10);
-fs.writeFileSync('validation-six-upgrades.json',JSON.stringify(reports,null,2));console.log(reports);
+fs.writeFileSync('tests/results/validation-six-upgrades.json',JSON.stringify(reports,null,2));console.log(reports);

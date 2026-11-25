@@ -2,12 +2,23 @@
   "name": "screenjoule",
   "version": "0.1.0",
   "private": true,
-  "description": "Electrothermal design screening under power-supply and electrode constraints",
+  "description": "Browser-based 0D, 2D and 3D electrothermal modeling for reactor design",
   "license": "MIT",
-  "engines": {"node": ">=22"},
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "python3 build.py",
     "test": "node scripts/test.mjs",
     "serve": "python3 -m http.server 8000 --directory dist"
+  },
+  "author": "Yeonsu Kwak",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robin-yk/ScreenJoule.git"
+  },
+  "homepage": "https://robin-yk.github.io/ScreenJoule/",
+  "bugs": {
+    "url": "https://github.com/robin-yk/ScreenJoule/issues"
   }
 }

@@ -2,6 +2,8 @@
 
 Study inputs, retained fields and figure assets accompany the browser application.
 
+[Project home](../README.md) · [Verification guide](../docs/verification.md) · [Literature comparison inputs](literature/README.md)
+
 - **Figure 4 — electrode contact and supply limits:** `3d-browser-check/` contains the 20-case width/power sweep and two temperature fields. `plot-electrode-study.py` redraws those arrays with the original study layout.
 - **Figure 5 — SiSiC geometries:** [geometry-sisic/](geometry-sisic/README.md) contains the current figure, four native browser images, and exact input/result records. The original capture automation and complete cell fields were not retained.
 - **Figure S9 — gas-flow comparison:** [gas-openfoam/](gas-openfoam/README.md) contains six matched cases, frozen ScreenJoule sources, an independent OpenFOAM solver, field comparisons and plotting commands.

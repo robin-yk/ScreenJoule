@@ -1,4 +1,4 @@
-const fs=require('fs'),assert=require('assert/strict'),{materialCatalog,materialPresetValues}=require('./src/materials');
+const fs=require('fs'),assert=require('assert/strict'),{materialCatalog,materialPresetValues}=require('../../src/materials');
 const solve=new Function(['flow','wall3d','engine'].map(n=>fs.readFileSync('src/'+n+'.js','utf8')).join('\n')+';return solveModel;')();
 assert.equal(materialCatalog.length,17);assert.equal(new Set(materialCatalog.map(m=>m.id)).size,17);
 const base={shape:'block',length:40,width:8,height:4,n:3,contact:100,offsetA:0,offsetB:0,mode:'P',command:.001,vmax:50,imax:30,pmax:100,ambient:25,sink:25,h:15,emissivity:0,hc:2000,maxTemp:2000,study:'steady',initial:25,flow:false};

@@ -7,3 +7,9 @@ authors:
     given-names: Yeonsu
 repository-code: "https://github.com/robin-yk/ScreenJoule"
 license: MIT
+url: "https://robin-yk.github.io/ScreenJoule/"
+abstract: "Browser-based electrothermal reactor-element models in 0D, 2D and 3D, with numerical checks and retained research comparisons."
+keywords:
+  - Joule heating
+  - electrothermal modeling
+  - reactor design

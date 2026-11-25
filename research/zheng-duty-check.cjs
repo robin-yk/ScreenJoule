@@ -1,7 +1,7 @@
 // One-point calibrated thermal reconstruction. Measured P and Q are inputs.
 const fs=require('node:fs');
 const {solveModel}=require('../src/engine');
-const previous=require('../validation-literature.json').results.find(r=>r.name==='Zheng | 13.04 V').params;
+const previous=require('./literature/validation-literature.json').results.find(r=>r.name==='Zheng | 13.04 V').params;
 const rows=[
  [100000,12.67,30.75,386.4,749,181],[100000,12.30,29.40,361.6,698,173],
  [100000,11.90,27.52,327.5,650,165],[100000,11.37,26.15,297.2,600,149],

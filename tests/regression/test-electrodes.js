@@ -7,4 +7,4 @@ assert(Math.abs(r.stats.R/expected-1)<1e-6);assert(r.stats.energyError<1e-5);ass
 report.push({name:'Finite copper electrodes and interface resistance match series circuit',pass:true,R:r.stats.R,expected,heaterMax:r.stats.heaterMax,electrodeMax:r.stats.electrodeMax,energyResidual:r.stats.energyError});
 const t=solveModel({...p,study:'transient',hc:0});assert(t.stats.integratedError<1e-4);report.push({name:'Multi-material transient storage conserves energy',pass:true,input:t.stats.inputEnergy,stored:t.stats.stored,residual:t.stats.integratedError});
 const g=solveModel({...p,flow:true,channelWidth:20,channelHeight:10,gasDensity:1.2,gasCp:1005,gasK:.026,mu:1.8e-5,flowRate:5,gasInlet:25});assert(g.stats.energyError<1e-5);report.push({name:'Finite electrodes coupled to gas conserve steady heat',pass:true,energyResidual:g.stats.energyError,outletC:g.gas.stats.outlet});
-fs.writeFileSync('validation-electrodes.json',JSON.stringify(report,null,2)+'\n');console.log(report);
+fs.writeFileSync('tests/results/validation-electrodes.json',JSON.stringify(report,null,2)+'\n');console.log(report);
